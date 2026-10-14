@@ -12,7 +12,7 @@ import logging
 import torch
 
 from ..ltx_enhanced import padding
-from ..ltx_enhanced.geometry import LTXV
+from ..ltx_enhanced.geometry import LTXV, LatentGeometry
 from ..ltx_enhanced.plan import Plan, make_run_plan
 from ..ltx_enhanced.schedule import check_sigmas
 from ..ltx_enhanced.tiled_call import TiledCall, TileSettings, disabled
@@ -31,6 +31,21 @@ def _deliver(target: str, custom_w: int, custom_h: int, src_w: int, src_h: int) 
         return int(custom_w), int(custom_h)
     size = padding.TARGETS[target]
     return size if size else (int(src_w), int(src_h))
+
+
+def _geometry(vae) -> LatentGeometry:
+    """Scale factors from the VAE when one is connected (its downscale formula: frames, height, width), otherwise the
+    LTX geometry (8, 32, 32)."""
+    if vae is None:
+        return LTXV
+    f = getattr(vae, "downscale_index_formula", None)
+    if not (isinstance(f, (tuple, list)) and len(f) == 3 and all(isinstance(v, int) and v > 0 for v in f)):
+        raise ValueError("This VAE does not report its video scale factors (frames, height, width), so the plan "
+                         "cannot be checked against it. Disconnect the VAE to use the LTX geometry.")
+    t, h, w = f
+    if h != w:
+        raise ValueError(f"This VAE scales height and width differently ({h} vs {w}); LTXE plans need square cells.")
+    return LatentGeometry(spatial=h, temporal=t)
 
 
 def _outputs(plan: Plan):
@@ -79,14 +94,16 @@ class LTXEResolutionPlan:
             "width": ("INT", {"default": 1920, "min": 1, "max": 16384, "tooltip": "Source width in pixels."}),
             "height": ("INT", {"default": 1080, "min": 1, "max": 16384, "tooltip": "Source height in pixels."}),
             "frames": ("INT", {"default": 97, "min": 1, "max": 100000, "tooltip": "Frames to deliver."}),
-            **_common_inputs()}}
+            **_common_inputs()},
+                "optional": {"vae": ("VAE", {"tooltip": "Optional: read the scale factors from this VAE instead of assuming the LTX "
+                                 "geometry (32 px per cell, 8 frames per latent frame)."})}}
 
     def run(self, width, height, frames, target, custom_width, custom_height, fit, pad_mode, pad_value, placement,
-            tile_width, tile_height):
+            tile_width, tile_height, vae=None):
         dw, dh = _deliver(target, custom_width, custom_height, width, height)
         plan = make_run_plan(width, height, frames, dw, dh, tile_w_px=tile_width or None,
                              tile_h_px=tile_height or None, fit=fit, mode=pad_mode, value=pad_value,
-                             placement=placement)
+                             placement=placement, geometry=_geometry(vae))
         out = _outputs(plan)
         return {"ui": {"text": [out[-1]]}, "result": out}
 
@@ -105,16 +122,18 @@ class LTXEPadFrames:
     def INPUT_TYPES(cls):
         return {"required": {"images": ("IMAGE", {"tooltip": "Source frames."}), **_common_inputs()},
                 "optional": {"mask": ("MASK", {"tooltip": "Optional mask; padded with the same transform "
-                                                          "(edge replicated)."})}}
+                                                          "(edge replicated)."}),
+                             "vae": ("VAE", {"tooltip": "Optional: read the scale factors from this VAE instead of assuming the LTX "
+                                 "geometry (32 px per cell, 8 frames per latent frame)."})}}
 
     def run(self, images, target, custom_width, custom_height, fit, pad_mode, pad_value, placement, tile_width,
-            tile_height, mask=None):
+            tile_height, mask=None, vae=None):
         if images.ndim == 3:
             images = images.unsqueeze(0)
         f, h, w = images.shape[:3]
         dw, dh = _deliver(target, custom_width, custom_height, w, h)
         plan = make_run_plan(w, h, f, dw, dh, tile_w_px=tile_width or None, tile_h_px=tile_height or None,
-                             fit=fit, mode=pad_mode, value=pad_value, placement=placement)
+                             fit=fit, mode=pad_mode, value=pad_value, placement=placement, geometry=_geometry(vae))
         padded = padding.pad_images(images, plan.pad)
         if mask is None:
             out_mask = torch.zeros(padded.shape[:3], dtype=torch.float32)
@@ -188,7 +207,8 @@ class LTXETiledModel:
         ltx = tuple(c for c in (getattr(comfy.model_base, "LTXV", None), getattr(comfy.model_base, "LTXAV", None)) if c)
         if not isinstance(inner, ltx):
             raise ValueError(f"LTXE Tiled Model needs an LTX model; this one is {type(inner).__name__}.")
-        s = LTXV.spatial
+        lf = getattr(inner, "latent_format", None)
+        s = int(getattr(lf, "spacial_downscale_ratio", None) or LTXV.spatial)
         settings = TileSettings(tile_w=max(1, tile_width // s), tile_h=max(1, tile_height // s),
                                 min_overlap=(-(-min_overlap // s) if min_overlap else None), weight=weight)
         call = TiledCall(settings)

@@ -98,3 +98,35 @@ def test_kill_switch_registers_no_nodes(monkeypatch):
     monkeypatch.setenv("LTXE_DISABLE", "1")
     fresh = load_pack("ltxe_pack_disabled_probe")
     assert fresh.NODE_CLASS_MAPPINGS == {}
+
+
+class _FakeVAE:
+    def __init__(self, formula):
+        self.downscale_index_formula = formula
+
+
+def test_vae_scale_factors_drive_the_plan():
+    cls = M["LTXE_ResolutionPlan"]
+    plan, w, h, length, _ = cls().run(**_defaults(cls, width=1000, height=600, frames=10, target="source size"),
+                                     vae=_FakeVAE((4, 16, 16)))["result"]
+    assert (w, h, length) == (1008, 608, 13)            # 16-px cells, 4k+1 frames
+    assert plan["geometry"]["spatial"] == 16 and plan["geometry"]["temporal"] == 4
+    plan32 = cls().run(**_defaults(cls, width=1000, height=600, frames=10, target="source size"))["result"]
+    assert plan32[1:4] == (1024, 608, 17)               # the LTX geometry when no VAE is connected
+
+
+def test_crop_back_uses_the_plan_geometry():
+    src = torch.rand(5, 30, 50, 3)
+    res = M["LTXE_PadFrames"]().run(src, **_defaults(M["LTXE_PadFrames"], target="source size"),
+                                    vae=_FakeVAE((4, 16, 16)))["result"]
+    padded, plan = res[0], res[2]
+    assert padded.shape == (5, 32, 64, 3)
+    assert torch.equal(M["LTXE_CropBack"]().run(padded, plan, "content")[0], src)
+
+
+def test_vae_without_video_factors_is_refused():
+    cls = M["LTXE_ResolutionPlan"]
+    with pytest.raises(ValueError, match="does not report its video scale factors"):
+        cls().run(**_defaults(cls, width=64, height=64, frames=1, target="source size"), vae=_FakeVAE(None))
+    with pytest.raises(ValueError, match="square cells"):
+        cls().run(**_defaults(cls, width=64, height=64, frames=1, target="source size"), vae=_FakeVAE((8, 32, 16)))

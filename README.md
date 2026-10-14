@@ -33,6 +33,8 @@ DCP needs 1920 × 1088 (2K) and 4096 × 2176 (4K) canvases, cropped back to 1920
 - the offsets are recorded in the plan;
 - the frame count is padded to 8k+1 and trimmed again.
 
+With a VAE connected (optional), the plan reads the VAE's own scale factors instead of assuming the LTX geometry of 32 px per cell and 8 frames per latent frame.
+
 ### Why the schedule matters
 
 Core's `LTXVScheduler` and `ModelSamplingLTXV` derive their shift from the latent's token count. Measured on core 0.39.0 and 0.40.0 ([crash repro 001](crash_repros/001-ltxv-schedule-at-4k/)):
@@ -60,7 +62,7 @@ decoded frames ─► LTXE Crop Back (plan) ─► Save
 
 ### Evidence for this release
 
-- 90 tests on CPU (`python -m pytest tests`), covering:
+- 93 tests on CPU (`python -m pytest tests`), covering:
   - pad → crop is the identity for every pad mode and placement;
   - exact DCP offsets;
   - tile coverage and weight sums;
