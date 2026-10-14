@@ -1,0 +1,25 @@
+{
+ "schema": 1,
+ "checked": "2026-10-14",
+ "method": "gh search issues <term> --repo Lightricks/ComfyUI-LTXVideo --sort comments (terms: tiled, out of memory, 4K, divisible, seam, crash, upscale, looping sampler, black, NaN, temporal); titles as filed, state on the check date",
+ "note": "Not reproduced yet. Reproduction is ledger L7.107 (A13 s7 step 2); each reproduced failure gets a folder in crash_repros/.",
+ "issues": [
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 347, "state": "closed", "title": "Width & height settings must be divisible by 32 + 1 Frame count must be divisible by 8 + 1. NOT", "area": "geometry", "why": "Users trip over the size and frame-count rules; the resolution planner must make them impossible to get wrong."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 522, "state": "open", "title": "with RTX 5090 200GB RAM - ltx 2.3 is broken; it runs out of memory (OOM) when I increase the fr", "area": "memory", "why": "OOM grows with frame count even on 32 GB VRAM: target for the memory planner and temporal windows."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 413, "state": "open", "title": "Memory Error Launching LTX2 Text to Video (Distilled)", "area": "memory", "why": "Load-time memory failure; the planner should estimate before loading."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 81, "state": "closed", "title": "Model v0.9.1 consumes much more VRAM", "area": "memory", "why": "Version-to-version VRAM regressions: benchmarks must name the model version."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 85, "state": "closed", "title": "Example workflow causing oom, not the model !", "area": "memory", "why": "Workflow choices, not weights, cause OOM: baseline workflows must be recorded exactly."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 493, "state": "closed", "title": "Missing Custom Node: LTXV Spatio Temporal Tiled VAE Decode", "area": "portability", "why": "Workflows break when a node is renamed or moved upstream: our workflows must not depend on upstream node names that change."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 531, "state": "open", "title": "Import failed - Possible upstream changes", "area": "portability", "why": "Upstream import breaks after core updates: integrate through stable core types, test oldest and newest core."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 494, "state": "open", "title": "Cannot import name 'pad'", "area": "portability", "why": "Same class: an internal name moved."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 534, "state": "closed", "title": "Dark scenes render as flat mid-grey background instead of black (isolated to VAE zero-point)", "area": "vae", "why": "Padding with zeros in latent space is not 'black': padding must use a value that decodes to the intended colour, or pixel-space padding."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 353, "state": "closed", "title": "[model BUG] VAE introduces ghosting artifacts. low noise v2v upscale cannot be usable.", "area": "vae", "why": "Ghosting in low-denoise v2v: a quality metric for the upscaling benchmarks."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 470, "state": "closed", "title": "Video skipping / flickering problem with the IC HDR Lora", "area": "temporal", "why": "Flicker from IC-LoRA passes: temporal-coherence metric needed."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 523, "state": "open", "title": "Input contains (near) NaN/+-Inf, LTX-2.3, ComfyUI", "area": "numerics", "why": "NaN reaches the video encoder: a finite-check guard and a crash repro."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 512, "state": "open", "title": "video frames all blank", "area": "numerics", "why": "Silent blank output: never return fake results; detect and report."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 465, "state": "closed", "title": "LTX 2.3 22B — Pure noise/garbage output in ComfyUI", "area": "numerics", "why": "Wrong weights/encoder combinations give noise: a pre-flight model check."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 312, "state": "closed", "title": "LTX-2 - Still getting  mat1 and mat2 shapes cannot be multiplied (1024x62208 and 188160x3840) e", "area": "integration", "why": "Text-encoder / connector mismatch: plain-English error mapping."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 369, "state": "open", "title": "Hope the \"LTXV Looping Sampler\" node can support audio latent looping", "area": "temporal", "why": "Temporal windows must carry the audio latent too (LTX-2 is audio-video)."},
+  {"repo": "Lightricks/ComfyUI-LTXVideo", "number": 384, "state": "closed", "title": "Sometimes the video doesn't move for 1-2 seconds, or there is no sound.", "area": "temporal", "why": "Frozen-start failure: a motion metric (first-second motion energy) in the benchmark."}
+ ]
+}

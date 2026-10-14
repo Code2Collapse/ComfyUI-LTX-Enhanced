@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+# benchmark scratch output; raw results that back a claim are committed under benchmarks/results/
+benchmarks/_scratch/

@@ -1,0 +1,620 @@
+{
+ "schema": 1,
+ "checked": "2026-10-14",
+ "method": "https://huggingface.co/api/models?author=Lightricks&cardData=true (read-only, no download)",
+ "note": "This pack never downloads or bundles weights. Each repo's own licence applies to the user.",
+ "models": [
+  {
+   "id": "Lightricks/LTX-2.5",
+   "family": "LTX-2.5",
+   "kind": "base",
+   "licence": "ltx-2.x-community-license-agreement",
+   "modified": "2026-07-23",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-Diffusers",
+   "family": "LTX-2.5",
+   "kind": "base",
+   "licence": "ltx-2.x-community-license-agreement",
+   "modified": "2026-07-26",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-Pre-Trained",
+   "family": "LTX-2.5",
+   "kind": "base",
+   "licence": "ltx-2-community-license-agreement",
+   "modified": "2026-08-10",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Alpha-Gen",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-28",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Clean-Plate",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-09",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Colorization",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-10",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Day-To-Night",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-08",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Deblur",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-09",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Decompression",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-10",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Ingredients",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-10",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Layout-To-Render",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-22",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-08-11",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Refine-Details",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-27",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Restore",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-27",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-SDR-To-HDR",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-28",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-IC-LoRA-Water-Simulation",
+   "family": "LTX-2.5",
+   "kind": "ic-lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-09",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-LoRA-Cinemagraph",
+   "family": "LTX-2.5",
+   "kind": "lora",
+   "licence": "ltx-2.x-community-license",
+   "modified": "2026-09-10",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.5-22b-LoRA-Slow-Motion-Control",
+   "family": "LTX-2.5",
+   "kind": "lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-09-15",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3",
+   "family": "LTX-2.3",
+   "kind": "base",
+   "licence": "ltx-2-community-license-agreement",
+   "modified": "2026-03-04",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-fp8",
+   "family": "LTX-2.3",
+   "kind": "base",
+   "licence": "ltx-2-community-license-agreement",
+   "modified": "2026-03-05",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-nvfp4",
+   "family": "LTX-2.3",
+   "kind": "base",
+   "licence": "ltx-2-community-license-agreement",
+   "modified": "2026-03-16",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Clean-Plate",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-07-19",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Colorization",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Cross-Eyed",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Day-To-Night",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Deblur",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Decompression",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-DubIt",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-05-11",
+   "pipeline": "any-to-any",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-HDR",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-04-20",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-In-Outpainting",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Ingredients",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Instant-Shave",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Motion-Track-Control",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-03-05",
+   "pipeline": "any-to-any",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Pixel-Spatial-Upscaler",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-23",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Relight",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-07-27",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Union-Control",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-03-05",
+   "pipeline": "any-to-any",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-IC-LoRA-Water-Simulation",
+   "family": "LTX-2.3",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-06-17",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-LoRA-Cinemagraph",
+   "family": "LTX-2.3",
+   "kind": "lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-07-05",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2.3-22b-LoRA-Foley-V2A",
+   "family": "LTX-2.3",
+   "kind": "lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-07-15",
+   "pipeline": "text-to-audio",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2",
+   "family": "LTX-2",
+   "kind": "base",
+   "licence": "ltx-2-community-license-agreement",
+   "modified": "2026-01-03",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-IC-LoRA-Canny-Control",
+   "family": "LTX-2",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-01-04",
+   "pipeline": "any-to-any",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-IC-LoRA-Depth-Control",
+   "family": "LTX-2",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-IC-LoRA-Detailer",
+   "family": "LTX-2",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-01-05",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-IC-LoRA-Pose-Control",
+   "family": "LTX-2",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-IC-LoRA-Union-Control",
+   "family": "LTX-2",
+   "kind": "ic-lora",
+   "licence": "ltx-2-community-license",
+   "modified": "2026-01-29",
+   "pipeline": "any-to-any",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-In",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "other",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-Left",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "other",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-Out",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "not stated",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-Right",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "other",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Jib-Down",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "other",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Jib-Up",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "other",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Static",
+   "family": "LTX-2",
+   "kind": "lora",
+   "licence": "other",
+   "modified": "2026-01-05",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "other",
+   "modified": "2024-10-31",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-0.9.1",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "other",
+   "modified": "2025-03-16",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-0.9.5",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "other",
+   "modified": "2025-03-16",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-0.9.7-dev",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "other",
+   "modified": "2025-05-13",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-0.9.7-distilled",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "other",
+   "modified": "2025-05-14",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-0.9.8-13B-distilled",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "other",
+   "modified": "2025-07-17",
+   "pipeline": "image-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-2B-0.9.6-Dev-04-25",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "ltxv-2b-0.9.6-dev-04-25-open-weights-license.txt",
+   "modified": "2025-04-18",
+   "pipeline": null,
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-2B-0.9.6-Distilled-04-25",
+   "family": "LTX-Video 0.9.x",
+   "kind": "base",
+   "licence": "ltxv-2b-distilled-distilled-04-25-license.txt",
+   "modified": "2025-04-18",
+   "pipeline": null,
+   "gated": null
+  },
+  {
+   "id": "Lightricks/ltxv-spatial-upscaler-0.9.7",
+   "family": "LTX-Video 0.9.x",
+   "kind": "upscaler",
+   "licence": "other",
+   "modified": "2025-05-14",
+   "pipeline": "video-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-ICLoRA-canny-13b-0.9.7",
+   "family": "LTX-Video 0.9.x",
+   "kind": "ic-lora",
+   "licence": "other",
+   "modified": "2025-07-01",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-ICLoRA-depth-13b-0.9.7",
+   "family": "LTX-Video 0.9.x",
+   "kind": "ic-lora",
+   "licence": "other",
+   "modified": "2025-07-01",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-ICLoRA-detailer-13b-0.9.8",
+   "family": "LTX-Video 0.9.x",
+   "kind": "ic-lora",
+   "licence": "other",
+   "modified": "2025-07-16",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-ICLoRA-pose-13b-0.9.7",
+   "family": "LTX-Video 0.9.x",
+   "kind": "ic-lora",
+   "licence": "other",
+   "modified": "2025-07-01",
+   "pipeline": "text-to-video",
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-Cakeify-LoRA",
+   "family": "LTX-Video 0.9.x",
+   "kind": "lora",
+   "licence": "not stated",
+   "modified": "2025-03-21",
+   "pipeline": null,
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTX-Video-Squish-LoRA",
+   "family": "LTX-Video 0.9.x",
+   "kind": "lora",
+   "licence": "not stated",
+   "modified": "2025-03-21",
+   "pipeline": null,
+   "gated": null
+  },
+  {
+   "id": "Lightricks/LTXV-LoRAs",
+   "family": "LTX-Video 0.9.x",
+   "kind": "lora",
+   "licence": "not stated",
+   "modified": "2025-05-03",
+   "pipeline": null,
+   "gated": null
+  }
+ ]
+}

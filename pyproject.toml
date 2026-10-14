@@ -1,0 +1,17 @@
+[project]
+name = "comfyui-ltx-enhanced"
+description = "Resolution, memory and tile planning for LTX video in ComfyUI: DCP 2K / 4K, padding, overlap blending, measured against existing methods. Clean-room Apache-2.0."
+version = "0.0.1"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+readme = "README.md"
+authors = [{ name = "Code2Collapse" }]
+dependencies = []  # torch and numpy come with ComfyUI
+
+[project.urls]
+Repository = "https://github.com/Code2Collapse/ComfyUI-LTX-Enhanced"
+Issues = "https://github.com/Code2Collapse/ComfyUI-LTX-Enhanced/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"

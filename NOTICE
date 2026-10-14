@@ -1,0 +1,10 @@
+ComfyUI-LTX-Enhanced
+Copyright 2026 Code2Collapse
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It contains no third-party source code. Ported permissive code, if any is added, is listed in NOTICE.md
+with its origin, revision and licence, and carries a "PORTED FROM" header in the file.
+
+LTX, LTX-Video and LTX-2 are models by Lightricks Ltd. This product does not include their code, weights
+or example workflows. It works with them through ComfyUI at run time, from an installation the user makes.
