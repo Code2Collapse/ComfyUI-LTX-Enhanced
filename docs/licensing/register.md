@@ -23,8 +23,8 @@ Each repository's rule is in the "Reuse" column of [the ecosystem registry](../r
 | GPL-3.0, AGPL-3.0 | Behaviour notes only | Copyleft cannot flow into a permissive licence (standing order 9). |
 | No licence file | Behaviour notes only | No licence means all rights reserved. |
 | RES4LYF (AGPL-3.0 plus a no-commercial-service clause), WanGP Community License 2.0, PolyForm Noncommercial | Nothing, beyond the idea level | The terms restrict commercial use or resale. An Apache pack must not carry that code. |
-| An MIT or Apache label on code ported from LTX-2 (for example dgrauet/ltx-2-mlx) | Behaviour notes only | A port of LTX-2 code is a Derivative: the LTX licence governs the ported parts, whatever the label says. |
-| Apache or MIT repositories that run inside another product (Arturogpj/wan2gp-ltx-tiled-refine in WanGP, LTX-Desktop) | Only files that are the author's own, checked file by file | The host product's own code keeps its own licence. |
+| An MIT or Apache label on code ported from LTX-2 (dgrauet/ltx-2-mlx; Arturogpj/wan2gp-ltx-tiled-refine, whose docstring says it ports LTX-2's TiledDiffusionModel) | Behaviour notes only | A port of LTX-2 code is a Derivative: the LTX licence governs the ported parts, whatever the label says. |
+| Apache or MIT repositories that run inside another product (LTX-Desktop) | Only files that are the author's own, checked file by file | The host product's own code keeps its own licence. |
 
 ## Integration points
 

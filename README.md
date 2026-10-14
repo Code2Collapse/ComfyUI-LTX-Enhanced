@@ -9,7 +9,7 @@ High-resolution LTX video generation for ComfyUI, aimed at DCP 2K (1920×1088) a
 
 Each method is measured against the existing ones before it is recommended.
 
-> **Status: research phase. No nodes yet.** This first release holds the ecosystem inventory and the licence register. Nodes arrive in the order of the [roadmap](#roadmap). Each one is labelled *experimental* until a benchmark backs it ([stability labels](docs/stability.md)).
+> **Status: research phase. No nodes yet.** So far the repository holds the ecosystem inventory, the licence register, the reverse-engineering notes and the first crash reproduction. Nodes arrive in the order of the [roadmap](#roadmap). Each one is labelled *experimental* until a benchmark backs it ([stability labels](docs/stability.md)).
 
 ## What it works with
 
@@ -37,7 +37,8 @@ This pack is Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)). It learns from m
 | [Model registry](docs/registry/models.md) | 68 Lightricks model repositories with their model-card licences |
 | [Papers](docs/papers/README.md) | 17 papers with verified arXiv ids: LTX-2, LTX-Video, MultiDiffusion and successors, long-video and video super-resolution work |
 | [Known upstream issues](docs/registry/known_issues.md) | 17 upstream failures to reproduce: OOM, size rules, VAE zero-point, NaN, portability |
-| [Reverse-engineering notes](docs/re-notes/) | How the existing implementations actually work (next step) |
+| [Reverse-engineering notes](docs/re-notes/) | How the existing implementations actually work: upstream's fusion, tiled and looping samplers, tiled VAE decode, LTX-2's official tiled diffusion, core LTX geometry. Includes a comparison table and the design decisions they support. |
+| [Crash reproductions](crash_repros/) | 001: core's LTX schedule saturates above 2K and is NaN at DCP 4K (core 0.39.0 and 0.40.0) |
 
 The JSON files next to each table are the record. Run `python tools/registry.py render` after editing one. `python tools/registry.py drift` shows which recorded repositories have moved since.
 
@@ -58,8 +59,8 @@ The JSON files next to each table are the record. Run `python tools/registry.py 
 ## Roadmap
 
 1. Inventory: ecosystem, models, papers, known issues, licences. **Done.**
-2. Reproduce the official and community workflows, including the known failures.
-3. Reverse-engineer the most relevant implementations and compare their algorithms.
+2. Reproduce the official and community workflows, including the known failures. (Needs GPU runs with LTX weights, done on the owner's machine.)
+3. Reverse-engineer the most relevant implementations and compare their algorithms. **First pass done:** [notes](docs/re-notes/README.md).
 4. Reproducible baselines on the available hardware.
 5. Original resolution planning, tiling, padding and blending.
 6. Benchmark existing techniques. Add the inference and quality optimisations that measure well.
