@@ -15,15 +15,20 @@ core's next APPLY_MODEL executor) and the keyword arguments core hands to the mo
 """
 from __future__ import annotations
 
+import gc
+import logging
 import math
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Callable
 
 import torch
 
 from .blend import TileAccumulator
 from .tiles import TilePlan, plan_tiles
+
+LOG = logging.getLogger("ltx_enhanced")
+OOM_ACTIONS = ("shrink tiles", "stop")
 
 # Keyword arguments the LTX models receive at apply_model (comfy/model_base.py LTXV / LTXAV extra_conds).
 SHARED_KEYS = frozenset({"frame_rate", "attention_mask", "audio_denoise_mask", "ref_audio"})
@@ -36,6 +41,27 @@ class TilingUnsupported(ValueError):
     """Raised with a plain-English reason when a call cannot be tiled safely."""
 
 
+class TilingOutOfMemory(RuntimeError):
+    """Raised when a tile still runs out of memory at the smallest allowed tile size."""
+
+
+def is_oom(exc: BaseException) -> bool:
+    """True for a GPU or CPU out-of-memory failure, whatever the torch version calls it."""
+    for name in ("OutOfMemoryError",):
+        for mod in (torch, getattr(torch, "cuda", None)):
+            cls = getattr(mod, name, None) if mod is not None else None
+            if isinstance(cls, type) and isinstance(exc, cls):
+                return True
+    text = str(exc).lower()
+    return "out of memory" in text or "not enough memory" in text or "allocation on device" in text
+
+
+def _default_free_memory() -> None:
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
 @dataclass(frozen=True)
 class TileSettings:
     tile_w: int                 # latent cells
@@ -45,6 +71,9 @@ class TileSettings:
     var: float = 0.05
     floor: float = 0.0
     spatial: int = 32           # pixels per latent cell: shifts guide coordinates and crops pixel masks
+    on_oom: str = "shrink tiles"    # or "stop"
+    min_tile: int = 4           # cells: the smallest tile side out-of-memory recovery may reach
+    max_retries: int = 6
 
 
 def disabled() -> bool:
@@ -161,11 +190,14 @@ def _crop(name: str, t: Any, ys: slice, xs: slice, h: int, w: int) -> Any:
 class TiledCall:
     """Holds the settings and a small plan cache; ``__call__`` runs one tiled model evaluation."""
 
-    def __init__(self, settings: TileSettings):
+    def __init__(self, settings: TileSettings, free_memory: Callable[[], None] | None = None):
         self.settings = settings
         self._plans: dict[tuple[int, int], TilePlan] = {}
         self.calls = 0            # model evaluations made (tiles), for tests and the log line
+        self.oom_retries = 0      # out-of-memory recoveries (each one halves the larger tile side)
         self.last_plan: TilePlan | None = None
+        self.last_frames = 0      # latent frames of the last call (a temporal context window passes fewer)
+        self._free = free_memory or _default_free_memory
 
     def plan_for(self, h: int, w: int) -> TilePlan:
         p = self._plans.get((h, w))
@@ -174,6 +206,20 @@ class TiledCall:
             p = plan_tiles(h, w, s.tile_h, s.tile_w, s.min_overlap)
             self._plans[(h, w)] = p
         return p
+
+    def _shrink(self, h: int, w: int) -> bool:
+        """Halve the larger tile side (within the canvas and the minimum). False when nothing can shrink."""
+        s = self.settings
+        th, tw = min(s.tile_h, h), min(s.tile_w, w)
+        if max(th, tw) <= s.min_tile:
+            return False
+        if th >= tw:
+            th = max(s.min_tile, th // 2)
+        else:
+            tw = max(s.min_tile, tw // 2)
+        self.settings = replace(s, tile_h=th, tile_w=tw)
+        self._plans.clear()
+        return True
 
     def __call__(self, executor: Callable, x: torch.Tensor, t, c_concat=None, c_crossattn=None, control=None,
                  transformer_options: dict | None = None, **kwargs) -> torch.Tensor:
@@ -192,11 +238,36 @@ class TiledCall:
             raise TilingUnsupported(f"LTXE Tiled Model expects a 5-D video latent [batch, channels, frames, "
                                     f"height, width]; got shape {tuple(video.shape)}.")
         h, w = video.shape[-2:]
-        plan = self.plan_for(h, w)
-        self.last_plan = plan
-        if plan.count == 1:
-            self.calls += 1
-            return executor(x, t, c_concat, c_crossattn, control, transformer_options, **kwargs)
+        self.last_frames = int(video.shape[2])
+        attempt = 0
+        while True:
+            plan = self.plan_for(h, w)
+            self.last_plan = plan
+            try:
+                if plan.count == 1:
+                    self.calls += 1
+                    return executor(x, t, c_concat, c_crossattn, control, transformer_options, **kwargs)
+                return self._run_tiles(executor, plan, video, others, packed, h, w, t, c_concat, c_crossattn,
+                                       control, transformer_options, kwargs)
+            except Exception as exc:  # noqa: BLE001 - only out-of-memory is handled, everything else re-raises
+                if not is_oom(exc) or self.settings.on_oom != "shrink tiles":
+                    raise
+                old = (self.settings.tile_w, self.settings.tile_h)
+                exc_text = str(exc).splitlines()[0][:160] if str(exc) else type(exc).__name__
+            # outside the except block, so the failed call's tensors can be freed
+            self._free()
+            attempt += 1
+            if attempt > self.settings.max_retries or not self._shrink(h, w):
+                raise TilingOutOfMemory(
+                    f"Out of memory even with {old[0] * self.settings.spatial}x{old[1] * self.settings.spatial} px tiles "
+                    f"({exc_text}). Lower the resolution or the frame count, free GPU memory, or allow smaller tiles.")
+            self.oom_retries += 1
+            s = self.settings
+            LOG.warning("LTXE Tiled Model: out of memory with %dx%d px tiles; retrying with %dx%d px",
+                        old[0] * s.spatial, old[1] * s.spatial, s.tile_w * s.spatial, s.tile_h * s.spatial)
+
+    def _run_tiles(self, executor, plan, video, others, packed, h, w, t, c_concat, c_crossattn, control,
+                   transformer_options, kwargs):
         _check_kwargs(kwargs, c_concat, control)
         guides = _has_guides(kwargs)
 

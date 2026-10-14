@@ -62,3 +62,14 @@ def test_downscaled_guide_is_refused_in_plain_english(probe):
     r = probe["guide_runs"][1]
     assert r["one_tile_max_diff"] == 0.0               # one tile never touches the guide bookkeeping
     assert r["error"] and "Downscaled guides" in r["error"]
+
+
+@pytest.mark.parametrize("i", [0, 1])
+def test_core_context_windows_compose_with_spatial_tiles(probe, i):
+    r = probe["context_runs"][i]
+    assert r["windows_change_result"] > 0, "context windows must actually be active in this probe"
+    assert r["one_tile_max_diff"] == 0.0, "one spatial tile must not change a context-window run"
+    # one 3-latent-frame window per call, plus the causal fix frame core adds to windows after the first
+    assert r["frames_per_call"] in (3, 4), r["frames_per_call"]
+    assert r["tiles"] > 1 and r["tile_calls"] >= r["tiles"] * probe["steps"] * 2 and r["tiled_finite"]
+    assert r["tiled_max_diff"] < 0.05 * max(r["base_mean_abs"], 1e-6)

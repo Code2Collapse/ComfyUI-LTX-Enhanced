@@ -80,7 +80,7 @@ decoded frames ─► LTXE Crop Back ─► delivered frames (exact source size 
   - default: a trapezoid with linear ramps over the overlap, endpoints excluded, so even a 1-cell overlap blends;
   - experimental: Gaussian, and Gaussian with a floor.
 - Normalisation divides by the summed weights. Coverage is verified: every cell has a weight sum > 0, and with trapezoids exactly 1.
-- Temporal tiles respect the causal first latent frame. A temporal tile that does not start at 0 is not a fresh clip. This is handled in L7.108; the first slice tiles **space only** and keeps all frames in each tile.
+- **Temporal windows are core's** (LTXV Context Windows, core 0.39+). Core already solves the causal first frame of later windows (it adds a causal fix frame) and per-window guides. LTXE Tiled Model tiles space inside each window. Tested together in both wrapping orders (ledger L7.108). A window that does not start at 0 is not a fresh clip, so re-implementing windows inside one model call would need position offsets that core does not expose.
 - Shared tokens:
   - audio (LTXAV) goes to every tile and is averaged;
   - text conditioning is shared;
@@ -96,7 +96,7 @@ decoded frames ─► LTXE Crop Back ─► delivered frames (exact source size 
 | An IC-LoRA guide whose grid does not match the canvas (downscaled guide) | Refuse (first slice). Supporting it is a later item. |
 | Batch > 1 | Tile each batch item the same way. Tiles are cut along H and W only. |
 | One tile covers the canvas | The wrapper calls the model once, unchanged: exact equality with untiled sampling |
-| Out of memory in a tile | Not caught in the first slice. The memory planner (L7.108) sizes tiles from measured VRAM. |
+| Out of memory in a tile | `on_out_of_memory = shrink tiles`: free memory, halve the larger tile side, retry (minimum 4 cells = 128 px, at most 6 times), keep the smaller size. `stop`: re-raise. At the minimum: a plain message. Sizing tiles from measured VRAM before the run needs GPU measurements (L7.107). |
 
 ## Budgets
 

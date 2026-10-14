@@ -63,6 +63,19 @@ decoded frames ─► LTXE Crop Back (plan) ─► Save
 
 **Not supported by LTXE Tiled Model:** downscaled guides (downscale factor above 1) and ControlNet. The node stops with a message naming the problem, instead of passing whole-frame data into a tile.
 
+**Long clips:** temporal windows come from ComfyUI core's own **LTXV Context Windows** node, which handles
+windows, overlap, the causal first frame and guides per window. LTXE Tiled Model then tiles each window spatially.
+The two were tested together in either order.
+
+**Out of memory:** with `on_out_of_memory` = *shrink tiles* (the default), a tile that runs out of GPU memory:
+
+- frees memory;
+- halves the larger tile side and retries, down to 128 px;
+- keeps the smaller size for the rest of the run.
+
+A tile as large as the frame therefore means "tile only if needed". Tested on CPU with a model that fails above a
+memory budget. Behaviour on a real GPU is still to be measured.
+
 **Kill switches:**
 
 - `LTXE_DISABLE_TILING=1` turns LTXE Tiled Model into a pass-through;
@@ -70,7 +83,7 @@ decoded frames ─► LTXE Crop Back (plan) ─► Save
 
 ### Evidence for this release
 
-- 105 tests on CPU (`python -m pytest tests`), covering:
+- 115 tests on CPU (`python -m pytest tests`), covering:
   - pad → crop is the identity for every pad mode and placement;
   - exact DCP offsets;
   - tile coverage and weight sums;
@@ -82,7 +95,8 @@ decoded frames ─► LTXE Crop Back (plan) ─► Save
   - one tile is bit-identical to a plain call;
   - several tiles run and blend;
   - a guide attached by core's own `LTXVAddGuide` path is tiled (9 tiles × 3 steps);
-  - a downscaled guide is refused.
+  - a downscaled guide is refused;
+  - core's LTXV Context Windows plus spatial tiles works in both wrapping orders (9 tiles × 3 steps × 3 windows).
   - These are integration checks, not quality results.
 - Live on the owner's stack (core 0.39.0, frontend 1.53.10): all nodes render in the classic and Nodes 2.0 renderers. A real run works at the root and **inside a subgraph**:
   - pad → crop-back returns the exact source size;

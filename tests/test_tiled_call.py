@@ -199,3 +199,63 @@ def test_kill_switch_passes_through(monkeypatch):
 def test_non_video_latent_is_refused():
     with pytest.raises(tc.TilingUnsupported, match="5-D video latent"):
         tc.TiledCall(S)(cellwise, torch.zeros(1, 4, 14, 20), torch.tensor([0.5]))
+
+
+def _oom_above(budget_cells, record=None):
+    """A fake model that runs out of memory when a call holds more than ``budget_cells`` spatial cells."""
+    def ex(x, t, cc, ca, ctl, opts, **kw):
+        cells = x.shape[-2] * x.shape[-1]
+        if record is not None:
+            record.append(cells)
+        if cells > budget_cells:
+            raise torch.cuda.OutOfMemoryError("CUDA out of memory. Tried to allocate 2.00 GiB")
+        return torch.tanh(x)
+    return ex
+
+
+def test_out_of_memory_shrinks_tiles_and_keeps_the_smaller_size():
+    x = _x(b=1, h=16, w=24)
+    freed = []
+    call = tc.TiledCall(tc.TileSettings(tile_w=24, tile_h=16), free_memory=lambda: freed.append(1))  # untiled start
+    seen = []
+    out = call(_oom_above(100, seen), x, torch.tensor([0.5]))
+    assert torch.allclose(out, torch.tanh(x), atol=1e-6)
+    assert call.oom_retries >= 2 and len(freed) == call.oom_retries
+    assert call.settings.tile_w * call.settings.tile_h <= 100 and call.last_plan.count > 1
+    seen.clear()
+    call(_oom_above(100, seen), x, torch.tensor([0.5]))          # the next step starts at the smaller size
+    assert seen and max(seen) <= 100 and call.oom_retries >= 2
+
+
+def test_out_of_memory_stop_mode_raises_the_original_error():
+    call = tc.TiledCall(tc.TileSettings(tile_w=24, tile_h=16, on_oom="stop"))
+    with pytest.raises(torch.cuda.OutOfMemoryError):
+        call(_oom_above(10), _x(b=1, h=16, w=24), torch.tensor([0.5]))
+
+
+def test_out_of_memory_at_the_smallest_tile_is_a_plain_message():
+    call = tc.TiledCall(tc.TileSettings(tile_w=8, tile_h=8, min_tile=4), free_memory=lambda: None)
+    with pytest.raises(tc.TilingOutOfMemory, match="Out of memory even with 128x128 px tiles"):
+        call(_oom_above(1), _x(b=1, h=16, w=24), torch.tensor([0.5]))
+
+
+def test_other_errors_are_not_retried():
+    calls = []
+
+    def ex(*a, **kw):
+        calls.append(1)
+        raise ValueError("shape mismatch")
+
+    with pytest.raises(ValueError, match="shape mismatch"):
+        tc.TiledCall(S)(ex, _x(), torch.tensor([0.5, 0.5]))
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("exc,expected", [
+    (torch.cuda.OutOfMemoryError("CUDA out of memory"), True),
+    (RuntimeError("DefaultCPUAllocator: not enough memory: you tried to allocate 1GB"), True),
+    (RuntimeError("Allocation on device 0 would exceed allowed memory"), True),
+    (RuntimeError("mat1 and mat2 shapes cannot be multiplied"), False),
+])
+def test_is_oom(exc, expected):
+    assert tc.is_oom(exc) is expected

@@ -15,7 +15,7 @@ from ..ltx_enhanced import padding
 from ..ltx_enhanced.geometry import LTXV, LatentGeometry
 from ..ltx_enhanced.plan import Plan, make_run_plan
 from ..ltx_enhanced.schedule import check_sigmas
-from ..ltx_enhanced.tiled_call import TiledCall, TileSettings, disabled
+from ..ltx_enhanced.tiled_call import OOM_ACTIONS, TiledCall, TileSettings, disabled
 
 LOG = logging.getLogger("ltx_enhanced")
 CATEGORY = "LTX Enhanced"
@@ -189,9 +189,14 @@ class LTXETiledModel:
                             "Capped at half a tile."}),
             "weight": (["trapezoid", "gaussian"], {"default": "trapezoid", "tooltip":
                        "trapezoid: flat inside, linear ramps over the overlaps (default). gaussian: experimental."}),
-            "enabled": ("BOOLEAN", {"default": True, "tooltip": "Off = return the model unchanged."})}}
+            "enabled": ("BOOLEAN", {"default": True, "tooltip": "Off = return the model unchanged."})},
+                "optional": {
+            "on_out_of_memory": (list(OOM_ACTIONS), {"default": OOM_ACTIONS[0], "tooltip":
+                                 "shrink tiles: when a tile runs out of GPU memory, free memory, halve the larger "
+                                 "tile side and retry (down to 128 px); the smaller size is kept for the rest of the "
+                                 "run. stop: fail at once. A tile as large as the frame means 'tile only if needed'."})}}
 
-    def run(self, model, tile_width, tile_height, min_overlap, weight, enabled):
+    def run(self, model, tile_width, tile_height, min_overlap, weight, enabled, on_out_of_memory="shrink tiles"):
         if not enabled or disabled():
             if disabled():
                 LOG.info("LTXE Tiled Model: LTXE_DISABLE_TILING is set; the model is returned unchanged")
@@ -211,8 +216,15 @@ class LTXETiledModel:
         s = int(getattr(lf, "spacial_downscale_ratio", None) or LTXV.spatial)
         settings = TileSettings(tile_w=max(1, tile_width // s), tile_h=max(1, tile_height // s),
                                 min_overlap=(-(-min_overlap // s) if min_overlap else None), weight=weight,
-                                spatial=s)
-        call = TiledCall(settings)
+                                spatial=s, on_oom=on_out_of_memory)
+        try:
+            import comfy.model_management as mm
+
+            def free_memory():
+                mm.soft_empty_cache()
+        except Exception:  # noqa: BLE001 - fall back to the core-free default
+            free_memory = None
+        call = TiledCall(settings, free_memory=free_memory)
 
         def wrapper(executor, x, t, c_concat=None, c_crossattn=None, control=None, transformer_options={}, **kwargs):
             return call(executor, x, t, c_concat, c_crossattn, control, transformer_options, **kwargs)

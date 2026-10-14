@@ -99,6 +99,39 @@ def run_guide(downscale=1):
     return out
 
 
+def run_context(order):
+    """Core's LTXV Context Windows (temporal) together with LTXE Tiled Model (spatial), in either wrapping order."""
+    from comfy_extras import nodes_context_windows as ncw
+    patcher = _patcher("ltxv")
+    g = lambda s: torch.Generator().manual_seed(s)  # noqa: E731
+    lat = torch.zeros(1, 128, 6, 8, 12)              # 41 pixel frames
+    noise = torch.randn(lat.shape, generator=g(1))
+    ctx = torch.randn(1, 7, 32, generator=g(3))
+    pos = [[ctx, {"attention_mask": torch.ones(1, 7)}]]
+    neg = [[torch.zeros_like(ctx), {"attention_mask": torch.ones(1, 7)}]]
+
+    def windows(m):   # 17 frames = 3 latent frames per window, 8 frames = 1 latent frame of overlap
+        return ncw.LTXVContextWindowsNode.execute(m, 17, 8, "standard_static", "pyramid", False)[0]
+
+    def tiled(m, tw, th):
+        return nodes.LTXETiledModel().run(m, tw, th, 0, "trapezoid", True)[0]
+
+    def build(tw, th):
+        return tiled(windows(patcher), tw, th) if order == "windows_then_tiles" else windows(tiled(patcher, tw, th))
+
+    sample = lambda m: comfy.sample.sample(m, noise, STEPS, 1.0, "euler", "simple", pos, neg, lat, seed=1)  # noqa: E731
+    base = sample(windows(patcher))
+    plain = sample(patcher)
+    one_m, multi_m = build(384, 256), build(192, 128)
+    one, multi = sample(one_m), sample(multi_m)
+    st = _wrapper_state(multi_m)
+    return {"kind": f"context_{order}", "windows_change_result": float((base - plain).abs().max()),
+            "one_tile_max_diff": float((base - one).abs().max()),
+            "tiled_max_diff": float((base - multi).abs().max()), "base_mean_abs": float(base.abs().mean()),
+            "tiled_finite": bool(torch.isfinite(multi).all()), "tiles": st.last_plan.count, "tile_calls": st.calls,
+            "frames_per_call": st.last_frames}
+
+
 def _parts(t):
     return list(t.unbind()) if hasattr(t, "unbind") and not torch.is_tensor(t) else [t]
 
@@ -132,4 +165,5 @@ def run(kind):
 if __name__ == "__main__":
     ver = (CORE / "comfyui_version.py").read_text(encoding="utf-8").strip().splitlines()[-1]
     print("RESULT " + json.dumps({"core_version": ver, "steps": STEPS, "runs": [run("ltxv"), run("ltxav")],
-                                   "guide_runs": [run_guide(1), run_guide(2)]}))
+                                   "guide_runs": [run_guide(1), run_guide(2)],
+                                   "context_runs": [run_context("windows_then_tiles"), run_context("tiles_then_windows")]}))
