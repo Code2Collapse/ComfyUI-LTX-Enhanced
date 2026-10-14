@@ -9,7 +9,71 @@ High-resolution LTX video generation for ComfyUI, aimed at DCP 2K (1920×1088) a
 
 Each method is measured against the existing ones before it is recommended.
 
-> **Status: research phase. No nodes yet.** So far the repository holds the ecosystem inventory, the licence register, the reverse-engineering notes and the first crash reproduction. Nodes arrive in the order of the [roadmap](#roadmap). Each one is labelled *experimental* until a benchmark backs it ([stability labels](docs/stability.md)).
+> **Status: first experimental nodes.** All five nodes are *experimental*: implemented and tested on CPU, including inside ComfyUI's real sampler with tiny random LTX models, but **not yet benchmarked on real LTX weights**. Image-quality claims wait for those GPU runs ([stability labels](docs/stability.md)).
+
+## Nodes
+
+All five are under **🐺 C2C / 🎥 LTX Enhanced** in the Add Node menu.
+
+| Node | What it does | Label |
+|---|---|---|
+| **LTXE Resolution Plan** | Plans an LTX canvas for a size and length: the aligned width, height and 8k+1 frame count to give `Empty LTXV Latent Video`, the padding to remove afterwards, the tile grid, and the token counts | experimental |
+| **LTXE Pad Frames** | Pads source frames, and an optional mask, into the aligned canvas: no stretching, no silent cropping. It returns the plan. | experimental |
+| **LTXE Crop Back** | Uses the plan to remove exactly the padding: the extra frames at the end and the border. Works after a 2× upscale too. | experimental |
+| **LTXE Tiled Model** | Makes every model call run tile by tile, and blends the tiles' predictions with trapezoid weights. Your sampler, noise and schedule are unchanged, so any sampler works, ancestral and multi-step ones included. In an LTX-2 audio-video latent, the audio is shared by all tiles. | experimental |
+| **LTXE Sigma Check** | Passes a schedule through, and stops the run with a plain-English message when it is NaN, rising, flat or saturated | experimental |
+
+### Why padding matters
+
+ComfyUI core floors the empty-latent size and centre-crops on VAE encode. So a 1920 × 1080 clip is sampled at 1920 × 1056, and its top and bottom 12 rows are lost.
+
+DCP needs 1920 × 1088 (2K) and 4096 × 2176 (4K) canvases, cropped back to 1920 × 1080 and 4096 × 2160. **LTXE Pad Frames → … → LTXE Crop Back** does exactly that:
+
+- the padding is reflected by default;
+- the offsets are recorded in the plan;
+- the frame count is padded to 8k+1 and trimmed again.
+
+### Why the schedule matters
+
+Core's `LTXVScheduler` and `ModelSamplingLTXV` derive their shift from the latent's token count. Measured on core 0.39.0 and 0.40.0 ([crash repro 001](crash_repros/001-ltxv-schedule-at-4k/)):
+
+- `ModelSamplingLTXV` with a generic scheduler keeps every step at σ ≥ 0.999 from DCP 2K;
+- `LTXVScheduler` becomes a staircase at 2560 × 1440, flat 0.1 at 3840 × 2176, and **NaN** at DCP 4K.
+
+When tiling, give the scheduler a **tile-sized** latent, since the model sees tiles. Put **LTXE Sigma Check** after the scheduler.
+
+### Wiring for a tiled run
+
+```
+Load model ─► LTXE Tiled Model ─► (your sampler: SamplerCustomAdvanced / KSampler)
+LTXE Resolution Plan ─► width / height / length ─► Empty LTXV Latent Video ─► sampler
+Empty LTXV Latent Video (TILE size) ─► LTXVScheduler ─► LTXE Sigma Check ─► sigmas
+decoded frames ─► LTXE Crop Back (plan) ─► Save
+```
+
+**Not yet supported by LTXE Tiled Model:** IC-LoRA guide or keyframe tokens (`LTXV Add Guide`, IC-LoRA guide nodes) and ControlNet. The node stops with a message naming the problem, instead of passing whole-frame data into a tile. For IC-LoRA refine passes, use Lightricks' `LTXV Tiled Fusion Sampler` for now. Supporting guide tokens is the next slice.
+
+**Kill switches:**
+
+- `LTXE_DISABLE_TILING=1` turns LTXE Tiled Model into a pass-through;
+- `LTXE_DISABLE=1` registers no nodes.
+
+### Evidence for this release
+
+- 90 tests on CPU (`python -m pytest tests`), covering:
+  - pad → crop is the identity for every pad mode and placement;
+  - exact DCP offsets;
+  - tile coverage and weight sums;
+  - a per-cell model tiled = untiled;
+  - packed audio-video;
+  - refusals.
+- The same suite runs LTXE Tiled Model inside core's own sampler, with tiny random LTX-Video and LTX-2 audio-video models:
+  - one tile is bit-identical to a plain call;
+  - several tiles run and blend.
+  - These are integration checks, not quality results.
+- Live on the owner's stack (core 0.39.0, frontend 1.53.10): all nodes render in the classic and Nodes 2.0 renderers. A real run works at the root and **inside a subgraph**:
+  - pad → crop-back returns the exact source size;
+  - Sigma Check reports the NaN schedule from a DCP-4K latent, or stops the run with the message.
 
 ## What it works with
 
@@ -47,8 +111,8 @@ The JSON files next to each table are the record. Run `python tools/registry.py 
 | Folder | Contents |
 |---|---|
 | `ltx_enhanced/` | Model-agnostic core: planners, padding, blending. Imports no ComfyUI. |
-| `nodes/` | Production ComfyUI nodes |
-| `experimental/` | Experimental algorithms and nodes, behind explicit options |
+| `nodes/` | Production ComfyUI nodes (none yet: a node moves here once benchmarked) |
+| `experimental/` | Experimental nodes: the five LTXE nodes above |
 | `benchmarks/` | Benchmark scripts and raw results |
 | `crash_repros/` | Minimal reproductions of every significant defect, with sanitized logs |
 | `tests/` | Automated tests (`python -m pytest tests`) |
@@ -61,8 +125,8 @@ The JSON files next to each table are the record. Run `python tools/registry.py 
 1. Inventory: ecosystem, models, papers, known issues, licences. **Done.**
 2. Reproduce the official and community workflows, including the known failures. (Needs GPU runs with LTX weights, done on the owner's machine.)
 3. Reverse-engineer the most relevant implementations and compare their algorithms. **First pass done:** [notes](docs/re-notes/README.md).
-4. Reproducible baselines on the available hardware.
-5. Original resolution planning, tiling, padding and blending.
+4. Reproducible baselines on the available hardware. (GPU: owner.)
+5. Original resolution planning, tiling, padding and blending. **First slice done:** planner, padding, crop-back, tiled model call, sigma check (experimental).
 6. Benchmark existing techniques. Add the inference and quality optimisations that measure well.
 7. Test combined methods for regressions and interactions.
 8. Publish verified code, reproducible experiments and transparent results.

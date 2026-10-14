@@ -15,10 +15,10 @@ RESTRICTED_MODULES = ("ltx_core", "ltx_pipelines", "ltx_kernels", "ltx_trainer",
 
 
 def _load_pack():
-    spec = importlib.util.spec_from_file_location("ltx_enhanced_pack_under_test", ROOT / "__init__.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _pack import load_pack
+    return load_pack()
 
 
 def _own_python_files():
@@ -28,7 +28,19 @@ def _own_python_files():
 
 
 def test_pack_imports_without_comfyui():
-    mod = _load_pack()  # this test process has no ComfyUI on sys.path
+    """In a clean interpreter (-I: no PYTHONPATH, no user site), loading the pack imports no ComfyUI module."""
+    import subprocess
+    import sys
+    code = ("import importlib.util, sys; r = sys.argv[1]; "
+            "s = importlib.util.spec_from_file_location('p', r + '/__init__.py', submodule_search_locations=[r]); "
+            "m = importlib.util.module_from_spec(s); sys.modules['p'] = m; s.loader.exec_module(m); "
+            "bad = [k for k in sys.modules if k == 'comfy' or k.startswith('comfy.') or k.startswith('comfy_')]; "
+            "print(len(m.NODE_CLASS_MAPPINGS), bad)")
+    out = subprocess.run([sys.executable, "-I", "-c", code, str(ROOT)], capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr
+    count, bad = out.stdout.strip().split(" ", 1)
+    assert bad == "[]" and int(count) == 5, out.stdout
+    mod = _load_pack()
     assert isinstance(mod.NODE_CLASS_MAPPINGS, dict)
     assert isinstance(mod.NODE_DISPLAY_NAME_MAPPINGS, dict)
     assert set(mod.NODE_DISPLAY_NAME_MAPPINGS) <= set(mod.NODE_CLASS_MAPPINGS)
