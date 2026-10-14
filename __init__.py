@@ -10,6 +10,7 @@ _LOG = logging.getLogger("ltx_enhanced")
 
 NODE_CLASS_MAPPINGS: dict = {}
 NODE_DISPLAY_NAME_MAPPINGS: dict = {}
+WEB_DIRECTORY = "web"
 
 if os.environ.get("LTXE_DISABLE", "").strip() in ("", "0"):
     # Guarded: an import failure here must cost this pack's nodes only, never break ComfyUI's start-up.
@@ -32,4 +33,4 @@ try:
 except Exception as _exc:  # noqa: BLE001
     _LOG.warning("C2C menu root not applied: %s", _exc)
 
-__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]

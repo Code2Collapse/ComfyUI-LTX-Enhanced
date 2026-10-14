@@ -33,6 +33,8 @@ DCP needs 1920 × 1088 (2K) and 4096 × 2176 (4K) canvases, cropped back to 1920
 - the offsets are recorded in the plan;
 - the frame count is padded to 8k+1 and trimmed again.
 
+`custom_width` / `custom_height` appear only for target *custom*, and `pad_value` only for pad mode *constant*. This works in both renderers and inside subgraphs.
+
 With a VAE connected (optional), the plan reads the VAE's own scale factors instead of assuming the LTX geometry of 32 px per cell and 8 frames per latent frame.
 
 ### Why the schedule matters
@@ -68,7 +70,7 @@ decoded frames ─► LTXE Crop Back (plan) ─► Save
 
 ### Evidence for this release
 
-- 100 tests on CPU (`python -m pytest tests`), covering:
+- 105 tests on CPU (`python -m pytest tests`), covering:
   - pad → crop is the identity for every pad mode and placement;
   - exact DCP offsets;
   - tile coverage and weight sums;
@@ -99,7 +101,7 @@ See the [model registry](docs/registry/models.md) for the licence of each model 
 
 ## Clean room, Apache-2.0
 
-This pack is Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)). It learns from many implementations whose licences do not allow their code into an Apache project: the LTX Community Licenses, GPL tiling packs and ComfyUI core. From those it takes behaviour notes only, written in our own words. The planners and blending are written from scratch, from published papers and those notes.
+This pack is Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)); the few files ported from the author's other Apache packs are listed in [NOTICE.md](NOTICE.md). It learns from many implementations whose licences do not allow their code into an Apache project: the LTX Community Licenses, GPL tiling packs and ComfyUI core. From those it takes behaviour notes only, written in our own words. The planners and blending are written from scratch, from published papers and those notes.
 
 - [Licence register](docs/licensing/register.md): every source, dependency and integration point, its licence, and what may be reused. Open points are listed there too.
 - [Clean-room procedure](docs/licensing/clean_room.md): how reading and writing are kept apart, and how a release is checked.
