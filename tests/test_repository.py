@@ -42,7 +42,8 @@ def test_every_node_carries_a_stability_label():
 
 
 def test_licence_is_the_apache_2_text():
-    assert hashlib.sha256((ROOT / "LICENSE").read_bytes()).hexdigest() == APACHE_SHA256
+    text = (ROOT / "LICENSE").read_bytes().replace(b"\r\n", b"\n")  # a CRLF checkout is the same text
+    assert hashlib.sha256(text).hexdigest() == APACHE_SHA256
 
 
 def test_registry_is_complete_and_rendered():
