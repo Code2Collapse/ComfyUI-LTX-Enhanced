@@ -68,6 +68,37 @@ def _inputs(kind):
     return lat, noise, pos, neg
 
 
+def run_guide(downscale=1):
+    """LTX-Video with an IC-LoRA-style guide attached by core's own LTXVAddGuide.attach_guide_latent."""
+    from comfy_extras import nodes_lt
+    patcher = _patcher("ltxv")
+    video, noise, pos, neg = _inputs("ltxv")
+    mask = nodes_lt.get_noise_mask({"samples": video})
+    gh, gw = video.shape[3] // downscale, video.shape[4] // downscale
+    guide = torch.randn(1, 128, 1, gh, gw, generator=torch.Generator().manual_seed(7))
+    pos, neg, lat, mask = nodes_lt.LTXVAddGuide.attach_guide_latent(
+        pos, neg, video, mask, guide, 0, 0.9, (8, 32, 32), latent_downscale_factor=downscale)
+    noise = torch.randn(lat.shape, generator=torch.Generator().manual_seed(1))
+    sample = lambda m: comfy.sample.sample(m, noise, STEPS, 1.0, "euler", "simple", pos, neg, lat,  # noqa: E731
+                                           noise_mask=mask, seed=1)
+    base = sample(patcher)
+    out = {"kind": f"ltxv_guide_x{downscale}", "latent": list(lat.shape),
+           "guide_tokens": int(pos[0][1]["keyframe_idxs"].shape[2]),
+           "entries": [e["latent_shape"] for e in pos[0][1]["guide_attention_entries"]]}
+    one_m = nodes.LTXETiledModel().run(patcher, 384, 256, 0, "trapezoid", True)[0]
+    out["one_tile_max_diff"] = float((base - sample(one_m)).abs().max())
+    tiled_m = nodes.LTXETiledModel().run(patcher, 192, 128, 0, "trapezoid", True)[0]
+    try:
+        tiled = sample(tiled_m)
+        st = _wrapper_state(tiled_m)
+        out.update(tiled_max_diff=float((base - tiled).abs().max()), base_mean_abs=float(base.abs().mean()),
+                   tiled_finite=bool(torch.isfinite(tiled).all()), tiles=st.last_plan.count, tile_calls=st.calls,
+                   error=None)
+    except Exception as exc:  # noqa: BLE001 - the refusal message is the result for downscaled guides
+        out.update(error=f"{type(exc).__name__}: {exc}"[:300])
+    return out
+
+
 def _parts(t):
     return list(t.unbind()) if hasattr(t, "unbind") and not torch.is_tensor(t) else [t]
 
@@ -100,4 +131,5 @@ def run(kind):
 
 if __name__ == "__main__":
     ver = (CORE / "comfyui_version.py").read_text(encoding="utf-8").strip().splitlines()[-1]
-    print("RESULT " + json.dumps({"core_version": ver, "steps": STEPS, "runs": [run("ltxv"), run("ltxav")]}))
+    print("RESULT " + json.dumps({"core_version": ver, "steps": STEPS, "runs": [run("ltxv"), run("ltxav")],
+                                   "guide_runs": [run_guide(1), run_guide(2)]}))

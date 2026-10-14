@@ -169,8 +169,8 @@ class LTXECropBack:
 class LTXETiledModel:
     DESCRIPTION = ("Makes every model call run tile by tile and blends the tiles' predictions with trapezoid weights, "
                    "while your sampler, noise and schedule stay as they are. Any sampler works, including ancestral "
-                   "and multi-step ones. Audio in an LTX-2 audio-video latent is shared by all tiles. Not yet: IC-LoRA "
-                   "guide or keyframe tokens, ControlNet. " + LABEL)
+                   "and multi-step ones. Audio in an LTX-2 audio-video latent is shared by all tiles; IC-LoRA guides "
+                   "(full size) are cut with the tile. Not supported: ControlNet, downscaled guides. " + LABEL)
     CATEGORY = f"{CATEGORY}/Sampling"
     FUNCTION = "run"
     RETURN_TYPES = ("MODEL",)
@@ -210,7 +210,8 @@ class LTXETiledModel:
         lf = getattr(inner, "latent_format", None)
         s = int(getattr(lf, "spacial_downscale_ratio", None) or LTXV.spatial)
         settings = TileSettings(tile_w=max(1, tile_width // s), tile_h=max(1, tile_height // s),
-                                min_overlap=(-(-min_overlap // s) if min_overlap else None), weight=weight)
+                                min_overlap=(-(-min_overlap // s) if min_overlap else None), weight=weight,
+                                spatial=s)
         call = TiledCall(settings)
 
         def wrapper(executor, x, t, c_concat=None, c_crossattn=None, control=None, transformer_options={}, **kwargs):

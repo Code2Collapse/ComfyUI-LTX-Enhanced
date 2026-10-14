@@ -47,3 +47,18 @@ def test_tiled_model_runs_in_core_sampler(probe, i, kind):
         assert 0.0 < diff < 0.05 * max(mean, 1e-6) or diff == 0.0
     if kind == "ltxav":
         assert len(r["parts"]) == 2, "the audio-video latent must come back as video + audio"
+
+
+def test_ic_lora_guide_attached_by_core_is_tiled(probe):
+    r = probe["guide_runs"][0]
+    assert r["error"] is None, r["error"]
+    assert r["guide_tokens"] == 8 * 12 and r["entries"] == [[1, 8, 12]]
+    assert r["one_tile_max_diff"] == 0.0
+    assert r["tiles"] > 1 and r["tile_calls"] >= r["tiles"] * probe["steps"] and r["tiled_finite"]
+    assert r["tiled_max_diff"] < 0.05 * max(r["base_mean_abs"], 1e-6)
+
+
+def test_downscaled_guide_is_refused_in_plain_english(probe):
+    r = probe["guide_runs"][1]
+    assert r["one_tile_max_diff"] == 0.0               # one tile never touches the guide bookkeeping
+    assert r["error"] and "Downscaled guides" in r["error"]

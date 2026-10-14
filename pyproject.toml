@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-ltx-enhanced"
 description = "Resolution, memory and tile planning for LTX video in ComfyUI: DCP 2K / 4K, padding, overlap blending, measured against existing methods. Clean-room Apache-2.0."
-version = "0.1.0"
+version = "0.2.0"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 readme = "README.md"

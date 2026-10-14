@@ -20,7 +20,7 @@ All five are under **🐺 C2C / 🎥 LTX Enhanced** in the Add Node menu.
 | **LTXE Resolution Plan** | Plans an LTX canvas for a size and length: the aligned width, height and 8k+1 frame count to give `Empty LTXV Latent Video`, the padding to remove afterwards, the tile grid, and the token counts | experimental |
 | **LTXE Pad Frames** | Pads source frames, and an optional mask, into the aligned canvas: no stretching, no silent cropping. It returns the plan. | experimental |
 | **LTXE Crop Back** | Uses the plan to remove exactly the padding: the extra frames at the end and the border. Works after a 2× upscale too. | experimental |
-| **LTXE Tiled Model** | Makes every model call run tile by tile, and blends the tiles' predictions with trapezoid weights. Your sampler, noise and schedule are unchanged, so any sampler works, ancestral and multi-step ones included. In an LTX-2 audio-video latent, the audio is shared by all tiles. | experimental |
+| **LTXE Tiled Model** | Makes every model call run tile by tile, and blends the tiles' predictions with trapezoid weights. Your sampler, noise and schedule are unchanged, so any sampler works, ancestral and multi-step ones included. In an LTX-2 audio-video latent, the audio is shared by all tiles. Full-size IC-LoRA guides are cut with the tiles. | experimental |
 | **LTXE Sigma Check** | Passes a schedule through, and stops the run with a plain-English message when it is NaN, rising, flat or saturated | experimental |
 
 ### Why padding matters
@@ -53,7 +53,13 @@ Empty LTXV Latent Video (TILE size) ─► LTXVScheduler ─► LTXE Sigma Check
 decoded frames ─► LTXE Crop Back (plan) ─► Save
 ```
 
-**Not yet supported by LTXE Tiled Model:** IC-LoRA guide or keyframe tokens (`LTXV Add Guide`, IC-LoRA guide nodes) and ControlNet. The node stops with a message naming the problem, instead of passing whole-frame data into a tile. For IC-LoRA refine passes, use Lightricks' `LTXV Tiled Fusion Sampler` for now. Supporting guide tokens is the next slice.
+**IC-LoRA guides** (`LTXV Add Guide`, IC-LoRA guide nodes) work when attached at full size:
+
+- the guide frames are cut with each tile;
+- their positions are moved to the tile's origin;
+- each guide's strength and attention mask follow along.
+
+**Not supported by LTXE Tiled Model:** downscaled guides (downscale factor above 1) and ControlNet. The node stops with a message naming the problem, instead of passing whole-frame data into a tile.
 
 **Kill switches:**
 
@@ -62,16 +68,19 @@ decoded frames ─► LTXE Crop Back (plan) ─► Save
 
 ### Evidence for this release
 
-- 93 tests on CPU (`python -m pytest tests`), covering:
+- 100 tests on CPU (`python -m pytest tests`), covering:
   - pad → crop is the identity for every pad mode and placement;
   - exact DCP offsets;
   - tile coverage and weight sums;
   - a per-cell model tiled = untiled;
   - packed audio-video;
+  - guide-token cropping and shifting;
   - refusals.
 - The same suite runs LTXE Tiled Model inside core's own sampler, with tiny random LTX-Video and LTX-2 audio-video models:
   - one tile is bit-identical to a plain call;
-  - several tiles run and blend.
+  - several tiles run and blend;
+  - a guide attached by core's own `LTXVAddGuide` path is tiled (9 tiles × 3 steps);
+  - a downscaled guide is refused.
   - These are integration checks, not quality results.
 - Live on the owner's stack (core 0.39.0, frontend 1.53.10): all nodes render in the classic and Nodes 2.0 renderers. A real run works at the root and **inside a subgraph**:
   - pad → crop-back returns the exact source size;

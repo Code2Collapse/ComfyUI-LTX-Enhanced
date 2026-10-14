@@ -95,14 +95,78 @@ def test_pack_matches_core_layout():
         assert torch.equal(u, v)
 
 
-@pytest.mark.parametrize("kw", [
-    {"keyframe_idxs": torch.zeros(1, 3, 12, 2)},
-    {"guide_attention_entries": [{"latent_shape": [1, 14, 20]}]},
-    {"generated_keyframes": {"num_keyframes": 1}},
+def _coords(b, f, h, w, spatial=32, t0=0):
+    """keyframe_idxs for f guide frames on an h x w grid: [batch, (t, y, x), tokens, (start, end)] in pixels."""
+    t, y, x = torch.meshgrid(torch.arange(f), torch.arange(h), torch.arange(w), indexing="ij")
+    start = torch.stack([t + t0, y * spatial, x * spatial]).reshape(3, -1).float()
+    return torch.stack([start, start + torch.tensor([1.0, spatial, spatial]).view(3, 1)], dim=-1).expand(b, 3, -1, 2).clone()
+
+
+def test_guide_tokens_are_cropped_and_shifted_per_tile():
+    f_content, f_guide, h, w = 3, 2, 14, 20
+    x = _x(b=1, f=f_content + f_guide)                      # guide frames are appended to the video latent
+    kf = _coords(1, f_guide, h, w, t0=40)
+    entries = [{"latent_shape": [1, h, w], "pre_filter_count": h * w, "strength": 0.8, "pixel_mask": None},
+               {"latent_shape": [1, h, w], "pre_filter_count": h * w, "strength": 1.0,
+                "pixel_mask": torch.rand(1, 1, 1, h * 32, w * 32)}]
+    gk = {"tokens_per_frame": h * w, "first_latent_frame": 0, "num_keyframes": 1}
+    seen = []
+
+    def ex(xt, t, cc, ca, ctl, opts, **kw):
+        th, tw = xt.shape[-2:]
+        k = kw["keyframe_idxs"]
+        assert k.shape == (1, 3, f_guide * th * tw, 2)
+        assert [e["pre_filter_count"] for e in kw["guide_attention_entries"]] == [th * tw, th * tw]
+        assert kw["guide_attention_entries"][1]["pixel_mask"].shape[-2:] == (th * 32, tw * 32)
+        assert kw["generated_keyframes"]["tokens_per_frame"] == th * tw
+        # coordinates are tile-local: the first token of every guide frame sits at pixel (0, 0)
+        grid = k[0, :, :, 0].reshape(3, f_guide, th, tw)
+        assert grid[1].min() == 0 and grid[2].min() == 0
+        assert grid[1].max() == (th - 1) * 32 and grid[2].max() == (tw - 1) * 32
+        assert torch.equal(grid[0][:, 0, 0], torch.tensor([40.0, 41.0]))   # time is untouched
+        seen.append((th, tw, opts["ltxe_tile"]))
+        return torch.tanh(xt)
+
+    call = tc.TiledCall(S)
+    out = call(ex, x, torch.tensor([0.5]), keyframe_idxs=kf, guide_attention_entries=entries, generated_keyframes=gk)
+    assert len(seen) == call.last_plan.count > 1
+    assert torch.allclose(out, torch.tanh(x), atol=1e-6)
+    # the caller's conditioning is never modified
+    assert torch.equal(kf, _coords(1, f_guide, h, w, t0=40)) and entries[0]["pre_filter_count"] == h * w
+
+
+def test_guide_without_entries_is_split_by_whole_frames():
+    x = _x(b=1, f=4)
+    seen = []
+
+    def ex(xt, *a, **kw):
+        seen.append(kw["keyframe_idxs"].shape[2] == xt.shape[-2] * xt.shape[-1])
+        return xt
+
+    tc.TiledCall(S)(ex, x, torch.tensor([0.5]), keyframe_idxs=_coords(1, 1, 14, 20))
+    assert seen and all(seen)
+
+
+@pytest.mark.parametrize("kw,match", [
+    ({"keyframe_idxs": _coords(1, 1, 7, 10), "guide_attention_entries": [{"latent_shape": [1, 7, 10], "pre_filter_count": 70}]},
+     "Downscaled guides"),
+    ({"keyframe_idxs": torch.zeros(1, 3, 13, 2)}, "not whole frames"),
+    ({"keyframe_idxs": _coords(1, 1, 14, 20), "guide_attention_entries": [{"latent_shape": [2, 14, 20], "pre_filter_count": 560}]},
+     "do not add up"),
+    ({"guide_attention_entries": [{"latent_shape": [1, 14, 20], "pre_filter_count": 280, "pixel_mask": torch.ones(1, 1, 1, 10, 10)}]},
+     "attention mask"),
+    ({"generated_keyframes": {"tokens_per_frame": 99, "first_latent_frame": 0, "num_keyframes": 1}}, "different latent size"),
 ])
-def test_guide_tokens_are_refused_in_plain_english(kw):
-    with pytest.raises(tc.TilingUnsupported, match="guide or keyframe tokens"):
+def test_inconsistent_guides_are_refused_in_plain_english(kw, match):
+    with pytest.raises(tc.TilingUnsupported, match=match):
         tc.TiledCall(S)(cellwise, _x(b=1), torch.tensor([0.5]), **kw)
+
+
+def test_broadcast_denoise_mask_is_shared():
+    x = _x(b=1)
+    mask = torch.full((1, 1, 3, 1, 1), 0.5)
+    out = tc.TiledCall(S)(cellwise, x, torch.tensor([0.5]), denoise_mask=mask)
+    assert torch.allclose(out, cellwise(x, torch.tensor([0.5]), None, None, None, {}, denoise_mask=mask), atol=1e-6)
 
 
 def test_empty_keyframe_tensor_is_not_a_guide():

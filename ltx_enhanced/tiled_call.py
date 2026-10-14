@@ -4,7 +4,11 @@ This is the body of the APPLY_MODEL wrapper (docs/design/architecture.md, "LTXE 
 follows the behaviour described in docs/re-notes/ltx2-official-tiled-diffusion.md: the sampler keeps one
 full-canvas latent and its own loop; each model call is split into spatial tiles, each tile's denoised (x0)
 prediction is blended with trapezoid weights, audio (when the latent is a packed audio-video latent) is shared by
-every tile and averaged.
+every tile and averaged. Guide frames (IC-LoRA / LTXV Add Guide) are latent frames appended to the video at canvas
+resolution, so they are cropped with the tile; their per-token pixel coordinates (``keyframe_idxs``) are cropped to the
+same cells and shifted to the tile's origin, and each guide's bookkeeping (``guide_attention_entries``,
+``generated_keyframes``) is rewritten for the tile's grid (behaviour of core's LTX model: comfy/ldm/lightricks/model.py
+``_process_input``; see docs/re-notes/README.md).
 
 The caller passes ``executor(x, t, c_concat, c_crossattn, control, transformer_options, **kwargs) -> x0`` (ComfyUI
 core's next APPLY_MODEL executor) and the keyword arguments core hands to the model.
@@ -40,6 +44,7 @@ class TileSettings:
     weight: str = "trapezoid"
     var: float = 0.05
     floor: float = 0.0
+    spatial: int = 32           # pixels per latent cell: shifts guide coordinates and crops pixel masks
 
 
 def disabled() -> bool:
@@ -69,11 +74,6 @@ def _has_guides(kwargs: dict) -> bool:
 
 
 def _check_kwargs(kwargs: dict, c_concat, control) -> None:
-    if _has_guides(kwargs):
-        raise TilingUnsupported(
-            "LTXE Tiled Model does not tile guide or keyframe tokens yet (IC-LoRA guides, LTXV Add Guide). "
-            "Use it for text-to-video, image-to-video with an in-place first frame, or a low-denoise refine of an "
-            "upscaled latent; for IC-LoRA guides use Lightricks' LTXV Tiled Fusion Sampler.")
     if control is not None:
         raise TilingUnsupported("LTXE Tiled Model cannot tile a ControlNet; remove the ControlNet or disable tiling.")
     if c_concat is not None:
@@ -86,12 +86,73 @@ def _check_kwargs(kwargs: dict, c_concat, control) -> None:
             "report the node that adds them.")
 
 
+def _tile_guides(kwargs: dict, ys: slice, xs: slice, h: int, w: int, spatial: int) -> dict:
+    """Guide bookkeeping for one tile. Returns only the keys that change."""
+    out: dict = {}
+    th, tw = ys.stop - ys.start, xs.stop - xs.start
+    kf = kwargs.get("keyframe_idxs")
+    entries = kwargs.get("guide_attention_entries")
+    if torch.is_tensor(kf) and kf.ndim == 4 and kf.shape[2] > 0:
+        b, axes, n, two = kf.shape
+        if axes != 3 or two != 2:
+            raise TilingUnsupported(f"LTXE Tiled Model does not recognise guide coordinates of shape {tuple(kf.shape)}.")
+        if entries:
+            blocks = []
+            for e in entries:
+                f, gh, gw = (int(v) for v in e["latent_shape"])
+                if (gh, gw) != (h, w):
+                    raise TilingUnsupported(
+                        f"A guide is encoded on a {gw}x{gh} latent grid but the video is {w}x{h}. Downscaled guides "
+                        "cannot be tiled yet; attach the guide at full size (downscale factor 1) or disable tiling.")
+                blocks.append(f)
+        else:
+            if n % (h * w):
+                raise TilingUnsupported(f"The guide tokens ({n}) are not whole frames of the {w}x{h} latent grid, "
+                                        "so they cannot be cut into tiles.")
+            blocks = [n // (h * w)]
+        if sum(f * h * w for f in blocks) != n:
+            raise TilingUnsupported("The guide entries do not add up to the guide tokens; the conditioning is "
+                                    "inconsistent, so it cannot be tiled.")
+        pieces, tok = [], 0
+        for f in blocks:
+            blk = kf[:, :, tok:tok + f * h * w, :].reshape(b, 3, f, h, w, 2)[:, :, :, ys, xs, :].clone()
+            blk[:, 1] -= ys.start * spatial          # rows: pixel coordinates relative to the tile
+            blk[:, 2] -= xs.start * spatial          # columns
+            pieces.append(blk.reshape(b, 3, f * th * tw, 2))
+            tok += f * h * w
+        out["keyframe_idxs"] = torch.cat(pieces, dim=2)
+    if entries:
+        new_entries = []
+        for e in entries:
+            f = int(e["latent_shape"][0])
+            ne = dict(e)
+            ne["latent_shape"] = [f, th, tw]
+            ne["pre_filter_count"] = f * th * tw
+            pm = e.get("pixel_mask")
+            if pm is not None:
+                if tuple(pm.shape[-2:]) != (h * spatial, w * spatial):
+                    raise TilingUnsupported(f"A guide's attention mask is {pm.shape[-1]}x{pm.shape[-2]} px but the "
+                                            f"video is {w * spatial}x{h * spatial} px; it cannot be tiled.")
+                ne["pixel_mask"] = pm[..., ys.start * spatial:ys.stop * spatial, xs.start * spatial:xs.stop * spatial]
+            new_entries.append(ne)
+        out["guide_attention_entries"] = new_entries
+    gk = kwargs.get("generated_keyframes")
+    if gk is not None:
+        if int(gk.get("tokens_per_frame", -1)) != h * w:
+            raise TilingUnsupported("The generated keyframes were recorded for a different latent size than the one "
+                                    "being sampled, so they cannot be tiled.")
+        out["generated_keyframes"] = {**gk, "tokens_per_frame": th * tw}
+    return out
+
+
 def _crop(name: str, t: Any, ys: slice, xs: slice, h: int, w: int) -> Any:
     """Crop a per-cell model input to the tile; refuse one whose grid does not match the latent."""
     if t is None:
         return None
     if torch.is_tensor(t) and t.ndim >= 2 and tuple(t.shape[-2:]) == (h, w):
         return t[..., ys, xs]
+    if torch.is_tensor(t) and t.ndim >= 2 and tuple(t.shape[-2:]) == (1, 1):
+        return t                                   # broadcast over the frame: the same for every tile
     shape = tuple(t.shape) if torch.is_tensor(t) else type(t).__name__
     raise TilingUnsupported(f"LTXE Tiled Model cannot tile '{name}': its shape {shape} does not match the "
                             f"latent grid {h}x{w}.")
@@ -137,6 +198,7 @@ class TiledCall:
             self.calls += 1
             return executor(x, t, c_concat, c_crossattn, control, transformer_options, **kwargs)
         _check_kwargs(kwargs, c_concat, control)
+        guides = _has_guides(kwargs)
 
         s = self.settings
         acc = None
@@ -146,6 +208,8 @@ class TiledCall:
             ys, xs = tile.slices()
             v_tile = video[..., ys, xs]
             kw = {k: (_crop(k, v, ys, xs, h, w) if k in CROPPED_KEYS else v) for k, v in kwargs.items()}
+            if guides:
+                kw.update(_tile_guides(kwargs, ys, xs, h, w, s.spatial))
             if packed:
                 x_tile, tile_shapes = pack([v_tile, *others])
                 kw[PACKING_KEY] = tile_shapes
