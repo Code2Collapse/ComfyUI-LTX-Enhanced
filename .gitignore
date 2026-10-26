@@ -7,3 +7,6 @@ dist/
 .venv/
 # benchmark scratch output; raw results that back a claim are committed under benchmarks/results/
 benchmarks/_scratch/
+
+# owner rule 2026-10-23: test suites stay on the developer machine, never pushed (L9.37)
+tests/
