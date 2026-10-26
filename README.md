@@ -83,7 +83,7 @@ memory budget. Behaviour on a real GPU is still to be measured.
 
 ### Evidence for this release
 
-- 115 tests on CPU (`python -m pytest tests`), covering:
+- 115 tests on CPU, run on the developer's machine (the suite is not published: owner rule 2026-10-23), covering:
   - pad → crop is the identity for every pad mode and placement;
   - exact DCP offsets;
   - tile coverage and weight sums;
@@ -142,7 +142,7 @@ The JSON files next to each table are the record. Run `python tools/registry.py 
 | `experimental/` | Experimental nodes: the five LTXE nodes above |
 | `benchmarks/` | Benchmark scripts and raw results |
 | `crash_repros/` | Minimal reproductions of every significant defect, with sanitized logs |
-| `tests/` | Automated tests (`python -m pytest tests`) |
+| `.github/` | CI: boots a fresh ComfyUI with only this pack and fails on an import failure, no registered node or a traceback (the test suite stays on the developer's machine) |
 | `workflows/` | Example workflows, built from scratch |
 | `docs/` | Registry, papers, reverse-engineering notes, licensing, stability labels |
 | `release_notes/` | One file per release |
