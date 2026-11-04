@@ -25,7 +25,7 @@ The planning and tiling nodes are under **🐺 C2C / 🎥 LTX Enhanced** in the 
 
 ### SDR → HDR helpers (new 2026-11-04)
 
-These eleven are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare, plan and deliver an SDR clip around the
+These twelve are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare, plan and deliver an SDR clip around the
 official LTX-2.5 SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They do not run the model themselves. The design is in
 [docs/HDR_ARCHITECTURE.md](docs/HDR_ARCHITECTURE.md).
 
@@ -41,19 +41,24 @@ official LTX-2.5 SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They 
 | **LTXE HDR Shadow Recovery** | Optional, off by default: where the source is crushed to black, uses the generated shadow detail at the source's local exposure (measured from the just-above-black pixels around it). Outside those areas the result is exactly the source; inside it never goes below the source. | experimental |
 | **LTXE HDR Source-Preservation Composite** | Keeps the source outside the synth mask and takes the generated HDR inside it, in linear ACEScg: where the mask is 0 the result is exactly the source in that space. An optional per-channel gain matches the generation to the source exposure; the source is never changed. | experimental |
 | **LTXE HDR Seam Exposure Match** | Matches a window's exposure to the window before it: the frames it shares with the previous window (already written as EXR) measure the step, and the correction fades out over `seam_width` frames, so the rest of the window is untouched. A difference above `max_stops` is reported, not hidden. Run the windows in order. | experimental |
+| **LTXE HDR QC** | Checks a delivered shot from the output folder: every frame present once, readable and free of NaN / Inf, EXR header (precision, compression, ACEScg primaries, fps), exposure jumps between frames (seams) and flicker. It recommends accept, review or hold, and never re-renders by itself. | experimental |
 | **LTXE HDR Delivery** | Writes the delivered frames of one decoded window as scene-linear ACEScg EXRs (half float, ZIP, no clamping), named after the source frames (`shot_hdr_1001.exr` ...), so the windows of a shot fill one sequence (one number width for the whole shot). Adds a JSON sidecar per window. Files stay inside ComfyUI's output folder. | experimental |
 
 **Status:**
 - Tested on CPU, and run in ComfyUI's real executor (core 0.39.0).
 - The HDR model run itself (LTX-2.5 22B on a GPU) has **not** been benchmarked by this pack.
-- `LTXE_DISABLE_HDR=1` removes just these eleven nodes.
+- `LTXE_DISABLE_HDR=1` removes just these twelve nodes.
 
 **Workflow** `workflows/2.5/hdr/LTXE_SDR_to_HDR_Pro.json`: SDR video in, ACEScg EXR frames out, one window per
 run, plus an HLG clip and a tonemapped preview per window. Only the clipped highlights come from the generation;
 the rest of the frame is the source. It needs ComfyUI-LTXVideo and the official LTX-2.5
 SDR-to-HDR files. It was built and checked in ComfyUI 0.39 / frontend 1.53.10 (it loads in both renderers; the
 server reports only the model and video files that were absent there); the model itself was not run. Seams between
-windows are still hard cuts, and audio is not muxed yet.
+windows are matched in exposure but not cross-faded, and audio is not muxed yet.
+
+**Workflow** `workflows/2.5/hdr/LTXE_HDR_Review_and_QC.json`: run it on the delivered folder when every window
+is done. It was run for real in ComfyUI 0.39: a complete two-window shot is accepted; with one frame deleted it
+holds and names the frame.
 
 ### Why padding matters
 

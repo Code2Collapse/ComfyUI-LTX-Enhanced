@@ -182,6 +182,7 @@ def sidecar(*, plan, delivery: Delivery, shot: str, layer: str, output_space: st
         "segment": delivery.index,
         "segments": len(plan.segments),
         "frame_range": [delivery.first_number, delivery.last_number],
+        "shot_frame_range": [int(plan.first_frame_number), int(plan.first_frame_number) + int(plan.total_frames) - 1],
         "frames": delivery.keep_count,
         "source_fps": plan.source_fps,
         "conditioning_fps": plan.conditioning_fps,

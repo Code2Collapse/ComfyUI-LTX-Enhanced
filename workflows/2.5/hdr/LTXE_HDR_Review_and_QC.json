@@ -1,0 +1,386 @@
+{
+ "id": "dc0dface-cae1-4942-bd92-23f75db26f96",
+ "revision": 0,
+ "last_node_id": 6,
+ "last_link_id": 4,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "LTXE_HDRQC",
+   "pos": [
+    40,
+    120
+   ],
+   "size": [
+    291.4087890625,
+    282
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "shot_name",
+     "name": "shot_name",
+     "type": "STRING",
+     "widget": {
+      "name": "shot_name"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "output_folder",
+     "name": "output_folder",
+     "type": "STRING",
+     "widget": {
+      "name": "output_folder"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "sample_every",
+     "name": "sample_every",
+     "type": "INT",
+     "widget": {
+      "name": "sample_every"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "jump_stops",
+     "name": "jump_stops",
+     "type": "FLOAT",
+     "widget": {
+      "name": "jump_stops"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "flicker_stops",
+     "name": "flicker_stops",
+     "type": "FLOAT",
+     "widget": {
+      "name": "flicker_stops"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "contact_frames",
+     "name": "contact_frames",
+     "type": "INT",
+     "widget": {
+      "name": "contact_frames"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "preview_exposure",
+     "name": "preview_exposure",
+     "type": "FLOAT",
+     "widget": {
+      "name": "preview_exposure"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "report",
+     "name": "report",
+     "type": "STRING",
+     "links": [
+      4
+     ]
+    },
+    {
+     "localized_name": "recommendation",
+     "name": "recommendation",
+     "type": "STRING",
+     "links": [
+      2
+     ]
+    },
+    {
+     "localized_name": "failed_frames",
+     "name": "failed_frames",
+     "type": "STRING",
+     "links": [
+      3
+     ]
+    },
+    {
+     "localized_name": "warning_intervals",
+     "name": "warning_intervals",
+     "type": "STRING",
+     "links": null
+    },
+    {
+     "localized_name": "contact_sheet",
+     "name": "contact_sheet",
+     "type": "IMAGE",
+     "links": [
+      1
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LTXE_HDRQC"
+   },
+   "widgets_values": [
+    "shot",
+    "ltxe_hdr",
+    1,
+    0.25,
+    0.05,
+    8,
+    0
+   ],
+   "widgets_values_named": {
+    "shot_name": "shot",
+    "output_folder": "ltxe_hdr",
+    "sample_every": 1,
+    "jump_stops": 0.25,
+    "flicker_stops": 0.05,
+    "contact_frames": 8,
+    "preview_exposure": 0
+   }
+  },
+  {
+   "id": 2,
+   "type": "PreviewImage",
+   "pos": [
+    440,
+    120
+   ],
+   "size": [
+    140,
+    26
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "images",
+     "name": "images",
+     "type": "IMAGE",
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "images",
+     "name": "images",
+     "type": "IMAGE",
+     "links": null
+    }
+   ],
+   "title": "Contact sheet (tonemapped)",
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   }
+  },
+  {
+   "id": 3,
+   "type": "PreviewAny",
+   "pos": [
+    440,
+    520
+   ],
+   "size": [
+    210,
+    122
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "source",
+     "name": "source",
+     "type": "*",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "title": "Recommendation",
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "widgets_values_named": {}
+  },
+  {
+   "id": 4,
+   "type": "PreviewAny",
+   "pos": [
+    440,
+    680
+   ],
+   "size": [
+    210,
+    122
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "source",
+     "name": "source",
+     "type": "*",
+     "link": 3
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "title": "Failed frames",
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "widgets_values_named": {}
+  },
+  {
+   "id": 5,
+   "type": "PreviewAny",
+   "pos": [
+    860,
+    120
+   ],
+   "size": [
+    210,
+    122
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "source",
+     "name": "source",
+     "type": "*",
+     "link": 4
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "title": "QC report (JSON)",
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "widgets_values_named": {}
+  },
+  {
+   "id": 6,
+   "type": "MarkdownNote",
+   "pos": [
+    40,
+    -460
+   ],
+   "size": [
+    780,
+    520
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {},
+   "widgets_values": [
+    "# LTXE HDR Review and QC (experimental)\n\nChecks a shot delivered by *LTXE SDR -> HDR Pro* before it goes out. Set `shot_name` and `output_folder` to the\nvalues used there and run. No model is loaded.\n\n**What it checks**\n- Every frame of the shot is present once (missing windows and frames are listed), readable, with no NaN / Inf.\n- EXR header: half / float, compression, ACEScg primaries, frame rate.\n- Exposure jumps between neighbouring frames (seams) and flicker; how much of each frame is above 1.0.\n\n**Result**: `accept`, `review` (warnings to look at) or `hold` (something is missing or broken). Nothing is\nre-rendered automatically: retry a window in the Pro workflow by setting its `window` number.\n\nThe contact sheet is a tonemapped preview (its exposure never touches the EXRs). Depth, normals, vectors and the\nmatte are not delivered yet (A23 P3)."
+   ],
+   "widgets_values_named": {
+    "text": "# LTXE HDR Review and QC (experimental)\n\nChecks a shot delivered by *LTXE SDR -> HDR Pro* before it goes out. Set `shot_name` and `output_folder` to the\nvalues used there and run. No model is loaded.\n\n**What it checks**\n- Every frame of the shot is present once (missing windows and frames are listed), readable, with no NaN / Inf.\n- EXR header: half / float, compression, ACEScg primaries, frame rate.\n- Exposure jumps between neighbouring frames (seams) and flicker; how much of each frame is above 1.0.\n\n**Result**: `accept`, `review` (warnings to look at) or `hold` (something is missing or broken). Nothing is\nre-rendered automatically: retry a window in the Pro workflow by setting its `window` number.\n\nThe contact sheet is a tonemapped preview (its exposure never touches the EXRs). Depth, normals, vectors and the\nmatte are not delivered yet (A23 P3)."
+   },
+   "color": "#432",
+   "bgcolor": "#653"
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   4,
+   2,
+   0,
+   "IMAGE"
+  ],
+  [
+   2,
+   1,
+   1,
+   3,
+   0,
+   "STRING"
+  ],
+  [
+   3,
+   1,
+   2,
+   4,
+   0,
+   "STRING"
+  ],
+  [
+   4,
+   1,
+   0,
+   5,
+   0,
+   "STRING"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "QC (LTX-Enhanced)",
+   "bounding": [
+    20,
+    60,
+    1070,
+    762
+   ],
+   "color": "#5a6a8a",
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 1,
+   "offset": [
+    0,
+    0
+   ]
+  },
+  "ltxe": {
+   "workflow": "LTXE_HDR_Review_and_QC",
+   "schema": 1,
+   "stability": "experimental",
+   "built_with": "core 0.39.0 (owner clone) + frontend 1.53.10, LTX-Enhanced + ComfyUI-LTXVideo 220e1d4 (testbed-only), --cpu, 127.0.0.1:8189"
+  }
+ },
+ "version": 0.4
+}

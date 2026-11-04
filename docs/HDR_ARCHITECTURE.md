@@ -115,4 +115,5 @@ the final image.
 | 8-bit Cleanup (projection onto the source quantisation cells, `ltx_enhanced/hdr/cleanup.py`) | P2 (L9.132): round trip exact, measured on ramps (docs/evidence/L9.132/cleanup_measure.json), executor run |
 | Shadow Recovery (`ltx_enhanced/hdr/shadows.py`: crushed mask, local exposure from the just-above-black ring, never below the source; off by default, feeds the composite's source) | P2 (L9.132): CPU tests + mutation check, executor run |
 | Seam Exposure Match (`ltx_enhanced/hdr/seams.py`: measured on the frames the previous window already delivered, faded over seam_width, refused above max_stops) | P2 (L9.132): CPU tests + mutation check, two-run executor test |
+| QC (`ltx_enhanced/hdr/qc.py`, output side: numbering, windows, integrity, header, exposure jumps, flicker; accept / review / hold) + `LTXE_HDR_Review_and_QC.json` | P2 (L9.132): CPU tests + mutation check, executor run on a delivered shot |
 | Model run on real weights | NOT RUN (needs LTX-2.5 22B on a GPU) |

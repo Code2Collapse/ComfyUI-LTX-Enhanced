@@ -12,7 +12,7 @@ import os
 
 import torch
 
-from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, seams, shadows, source_audit
+from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, qc, seams, shadows, source_audit
 
 CATEGORY = "LTX Enhanced/HDR"
 PLAN_TYPE = "LTXE_HDR_PLAN"
@@ -537,6 +537,72 @@ class LTXEHDRSeamExposureMatch:
         return {"ui": {"text": [text]}, "result": (out, json.dumps(rep, indent=1, default=str))}
 
 
+class LTXEHDRQC:
+    DESCRIPTION = ("Checks a delivered shot before it goes out, from the output folder alone: every frame present once "
+                   "(missing windows and frames listed), readable and free of NaN / Inf, EXR header (precision, "
+                   "compression, ACEScg primaries, fps), exposure jumps between frames (seams), flicker, and how much "
+                   "of each frame was reconstructed above 1.0. It recommends accept, review or hold; it never "
+                   "re-renders anything by itself. The contact sheet is a tonemapped preview only. " + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "IMAGE")
+    RETURN_NAMES = ("report", "recommendation", "failed_frames", "warning_intervals", "contact_sheet")
+    OUTPUT_NODE = True
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = qc.QCSettings()
+        return {"required": {
+            "shot_name": ("STRING", {"default": "shot", "tooltip": "The shot name used on LTXE HDR Delivery."}),
+            "output_folder": ("STRING", {"default": "ltxe_hdr",
+                                         "tooltip": "The output folder used on LTXE HDR Delivery."}),
+            "sample_every": ("INT", {"default": d.sample_every, "min": 1, "max": 1000, "tooltip": (
+                "Read every n-th frame for the pixel checks (numbering is always checked for every frame).")}),
+            "jump_stops": ("FLOAT", {"default": d.jump_stops, "min": 0.01, "max": 4.0, "step": 0.01,
+                                     "tooltip": "An exposure jump between two frames above this is flagged."}),
+            "flicker_stops": ("FLOAT", {"default": d.flicker_stops, "min": 0.001, "max": 1.0, "step": 0.001,
+                                        "tooltip": "Mean frame-to-frame change above this is a warning."}),
+            "contact_frames": ("INT", {"default": d.contact_frames, "min": 1, "max": 64,
+                                       "tooltip": "Frames on the contact sheet."}),
+            "preview_exposure": ("FLOAT", {"default": 0.0, "min": -10.0, "max": 10.0, "step": 0.1, "tooltip": (
+                "Exposure of the contact sheet only, in stops (never changes the delivered frames).")}),
+        }}
+
+    @classmethod
+    def IS_CHANGED(cls, shot_name="shot", output_folder="ltxe_hdr", **kw):
+        # the files on disk are the input: re-check whenever the folder's contents change
+        import hashlib
+        try:
+            import folder_paths
+            folder = exr_writer.safe_folder(folder_paths.get_output_directory(), output_folder)
+            h = hashlib.sha1()
+            for sub in ("hdr", "metadata"):
+                d = os.path.join(folder, sub)
+                for name in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+                    st = os.stat(os.path.join(d, name))
+                    h.update(f"{name}:{st.st_size}:{st.st_mtime_ns}".encode())
+            return h.hexdigest() + repr(sorted(kw.items()))
+        except Exception as exc:  # noqa: BLE001 - an unreadable folder is reported by run()
+            return f"unreadable:{exc}"
+
+    def run(self, shot_name, output_folder, sample_every, jump_stops, flicker_stops, contact_frames,
+            preview_exposure):
+        import folder_paths  # ComfyUI; imported here so the module loads without it
+
+        shot = exr_writer.safe_name(shot_name, "shot_name")
+        folder = exr_writer.safe_folder(folder_paths.get_output_directory(), output_folder)
+        st = qc.QCSettings(sample_every, 4, jump_stops, flicker_stops, contact_frames)
+        rep, thumbs = qc.run_qc(folder, shot, st)
+        sheet = torch.from_numpy(qc.contact_sheet(thumbs or [], preview_exposure))
+        fails = ", ".join(f"{a}-{b}" if a != b else str(a) for a, b in qc._ranges(rep.get("failed_frames", [])))
+        text = (f"{rep['recommendation'].upper()}: "
+                + "; ".join(f"{k} {v['status']}" for k, v in rep["checks"].items() if v["status"] in ("fail", "warning"))
+                or f"{rep['recommendation'].upper()}: all checks passed")
+        return {"ui": {"text": [text]},
+                "result": (json.dumps(rep, indent=1, default=str), rep["recommendation"], fails,
+                           json.dumps(rep.get("warning_intervals", [])), sheet)}
+
+
 NODE_CLASS_MAPPINGS = {
     "LTXE_HDRSourceAudit": LTXEHDRSourceAudit,
     "LTXE_HDRInputColor": LTXEHDRInputColor,
@@ -549,6 +615,7 @@ NODE_CLASS_MAPPINGS = {
     "LTXE_HDR8bitCleanup": LTXEHDR8bitCleanup,
     "LTXE_HDRShadowRecovery": LTXEHDRShadowRecovery,
     "LTXE_HDRSeamExposureMatch": LTXEHDRSeamExposureMatch,
+    "LTXE_HDRQC": LTXEHDRQC,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRSourceAudit": "LTXE HDR Source Audit (experimental)",
@@ -562,4 +629,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDR8bitCleanup": "LTXE HDR 8-bit Cleanup (experimental)",
     "LTXE_HDRShadowRecovery": "LTXE HDR Shadow Recovery (experimental)",
     "LTXE_HDRSeamExposureMatch": "LTXE HDR Seam Exposure Match (experimental)",
+    "LTXE_HDRQC": "LTXE HDR QC (experimental)",
 }
