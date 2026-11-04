@@ -1,8 +1,8 @@
 {
- "id": "e5d8f0b7-7538-4589-9140-5073c8e3b0c4",
+ "id": "391797ba-a415-4f97-96ad-19227ad17dea",
  "revision": 0,
- "last_node_id": 38,
- "last_link_id": 59,
+ "last_node_id": 43,
+ "last_link_id": 70,
  "nodes": [
   {
    "id": 1,
@@ -89,7 +89,8 @@
      "type": "IMAGE",
      "links": [
       2,
-      4
+      4,
+      45
      ]
     },
     {
@@ -205,7 +206,7 @@
      "name": "report_json",
      "type": "STRING",
      "links": [
-      48
+      59
      ]
     },
     {
@@ -526,7 +527,8 @@
      "type": "LTXE_HDR_PLAN",
      "links": [
       10,
-      46
+      47,
+      57
      ]
     },
     {
@@ -548,8 +550,8 @@
      "name": "output_fps",
      "type": "FLOAT",
      "links": [
-      54,
-      58
+      65,
+      69
      ]
     },
     {
@@ -613,7 +615,8 @@
      "type": "INT",
      "links": [
       11,
-      47
+      48,
+      58
      ]
     }
    ],
@@ -673,7 +676,8 @@
      "name": "window",
      "type": "IMAGE",
      "links": [
-      24
+      24,
+      53
      ]
     },
     {
@@ -681,7 +685,7 @@
      "name": "keep_offset",
      "type": "INT",
      "links": [
-      50
+      61
      ]
     },
     {
@@ -689,7 +693,7 @@
      "name": "keep_count",
      "type": "INT",
      "links": [
-      51
+      62
      ]
     },
     {
@@ -1835,6 +1839,589 @@
   },
   {
    "id": 28,
+   "type": "ResizeImageMaskNode",
+   "pos": [
+    420,
+    1080
+   ],
+   "size": [
+    270,
+    106
+   ],
+   "flags": {},
+   "order": 27,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "input",
+     "name": "input",
+     "type": "IMAGE,MASK",
+     "link": 45
+    },
+    {
+     "localized_name": "resize_type",
+     "name": "resize_type",
+     "type": "COMFY_DYNAMICCOMBO_V3",
+     "widget": {
+      "name": "resize_type"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "multiple",
+     "name": "resize_type.multiple",
+     "type": "INT",
+     "widget": {
+      "name": "resize_type.multiple"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "scale_method",
+     "name": "scale_method",
+     "type": "COMBO",
+     "widget": {
+      "name": "scale_method"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "resized",
+     "name": "resized",
+     "type": "IMAGE",
+     "links": [
+      46
+     ]
+    }
+   ],
+   "title": "Resize SDR (same as the guide)",
+   "properties": {
+    "Node name for S&R": "ResizeImageMaskNode"
+   },
+   "widgets_values": [
+    "scale to multiple",
+    32,
+    "lanczos"
+   ],
+   "widgets_values_named": {
+    "resize_type": "scale to multiple",
+    "resize_type.multiple": 32,
+    "scale_method": "lanczos"
+   }
+  },
+  {
+   "id": 29,
+   "type": "LTXE_HDRTakeSegment",
+   "pos": [
+    800,
+    900
+   ],
+   "size": [
+    364.8267578125,
+    118
+   ],
+   "flags": {},
+   "order": 28,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "images",
+     "name": "images",
+     "type": "IMAGE",
+     "link": 46
+    },
+    {
+     "localized_name": "plan",
+     "name": "plan",
+     "type": "LTXE_HDR_PLAN",
+     "link": 47
+    },
+    {
+     "localized_name": "index",
+     "name": "index",
+     "type": "INT",
+     "widget": {
+      "name": "index"
+     },
+     "link": 48
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "window",
+     "name": "window",
+     "type": "IMAGE",
+     "links": [
+      49,
+      52
+     ]
+    },
+    {
+     "localized_name": "keep_offset",
+     "name": "keep_offset",
+     "type": "INT",
+     "links": null
+    },
+    {
+     "localized_name": "keep_count",
+     "name": "keep_count",
+     "type": "INT",
+     "links": null
+    },
+    {
+     "localized_name": "frames",
+     "name": "frames",
+     "type": "INT",
+     "links": null
+    }
+   ],
+   "title": "SDR window (for the masks)",
+   "properties": {
+    "Node name for S&R": "LTXE_HDRTakeSegment"
+   },
+   "widgets_values": [
+    0
+   ],
+   "widgets_values_named": {
+    "index": 0
+   }
+  },
+  {
+   "id": 30,
+   "type": "LTXE_HDRHighlightAnalyzer",
+   "pos": [
+    2320,
+    1000
+   ],
+   "size": [
+    391.3775390625,
+    262
+   ],
+   "flags": {},
+   "order": 29,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "images",
+     "name": "images",
+     "type": "IMAGE",
+     "link": 49
+    },
+    {
+     "localized_name": "user_mask",
+     "name": "user_mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "localized_name": "hard_clip",
+     "name": "hard_clip",
+     "type": "FLOAT",
+     "widget": {
+      "name": "hard_clip"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "near_white",
+     "name": "near_white",
+     "type": "FLOAT",
+     "widget": {
+      "name": "near_white"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "channel_policy",
+     "name": "channel_policy",
+     "type": "COMBO",
+     "widget": {
+      "name": "channel_policy"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "expand_px",
+     "name": "expand_px",
+     "type": "INT",
+     "widget": {
+      "name": "expand_px"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "feather_px",
+     "name": "feather_px",
+     "type": "INT",
+     "widget": {
+      "name": "feather_px"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "temporal_frames",
+     "name": "temporal_frames",
+     "type": "INT",
+     "widget": {
+      "name": "temporal_frames"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "user_mode",
+     "name": "user_mode",
+     "shape": 7,
+     "type": "COMBO",
+     "widget": {
+      "name": "user_mode"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "clip_mask",
+     "name": "clip_mask",
+     "type": "MASK",
+     "links": [
+      50
+     ]
+    },
+    {
+     "localized_name": "highlight_map",
+     "name": "highlight_map",
+     "type": "MASK",
+     "links": [
+      51
+     ]
+    },
+    {
+     "localized_name": "preview",
+     "name": "preview",
+     "type": "IMAGE",
+     "links": null
+    },
+    {
+     "localized_name": "report",
+     "name": "report",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LTXE_HDRHighlightAnalyzer"
+   },
+   "widgets_values": [
+    0.998,
+    0.92,
+    "any",
+    0,
+    0,
+    1,
+    "add"
+   ],
+   "widgets_values_named": {
+    "hard_clip": 0.998,
+    "near_white": 0.92,
+    "channel_policy": "any",
+    "expand_px": 0,
+    "feather_px": 0,
+    "temporal_frames": 1,
+    "user_mode": "add"
+   }
+  },
+  {
+   "id": 31,
+   "type": "LTXE_HDRSynthMask",
+   "pos": [
+    2320,
+    1300
+   ],
+   "size": [
+    347.976171875,
+    262
+   ],
+   "flags": {},
+   "order": 30,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "clip_mask",
+     "name": "clip_mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": 50
+    },
+    {
+     "localized_name": "highlight_map",
+     "name": "highlight_map",
+     "shape": 7,
+     "type": "MASK",
+     "link": 51
+    },
+    {
+     "localized_name": "user_mask",
+     "name": "user_mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "localized_name": "preview_images",
+     "name": "preview_images",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 52
+    },
+    {
+     "localized_name": "use_clip",
+     "name": "use_clip",
+     "type": "BOOLEAN",
+     "widget": {
+      "name": "use_clip"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "include_near_white",
+     "name": "include_near_white",
+     "type": "BOOLEAN",
+     "widget": {
+      "name": "include_near_white"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "near_white_weight",
+     "name": "near_white_weight",
+     "type": "FLOAT",
+     "widget": {
+      "name": "near_white_weight"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "grow_px",
+     "name": "grow_px",
+     "type": "INT",
+     "widget": {
+      "name": "grow_px"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "feather_px",
+     "name": "feather_px",
+     "type": "INT",
+     "widget": {
+      "name": "feather_px"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "temporal_frames",
+     "name": "temporal_frames",
+     "type": "INT",
+     "widget": {
+      "name": "temporal_frames"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "user_mode",
+     "name": "user_mode",
+     "shape": 7,
+     "type": "COMBO",
+     "widget": {
+      "name": "user_mode"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "synth_mask",
+     "name": "synth_mask",
+     "type": "MASK",
+     "links": [
+      55
+     ]
+    },
+    {
+     "localized_name": "preview",
+     "name": "preview",
+     "type": "IMAGE",
+     "links": null
+    },
+    {
+     "localized_name": "mask_qc",
+     "name": "mask_qc",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LTXE_HDRSynthMask"
+   },
+   "widgets_values": [
+    true,
+    false,
+    1,
+    4,
+    6,
+    3,
+    "add"
+   ],
+   "widgets_values_named": {
+    "use_clip": true,
+    "include_near_white": false,
+    "near_white_weight": 1,
+    "grow_px": 4,
+    "feather_px": 6,
+    "temporal_frames": 3,
+    "user_mode": "add"
+   }
+  },
+  {
+   "id": 32,
+   "type": "LTXE_HDRPreservationComposite",
+   "pos": [
+    2320,
+    1600
+   ],
+   "size": [
+    482.425390625,
+    210
+   ],
+   "flags": {},
+   "order": 31,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "source",
+     "name": "source",
+     "type": "IMAGE",
+     "link": 53
+    },
+    {
+     "localized_name": "generated",
+     "name": "generated",
+     "type": "IMAGE",
+     "link": 54
+    },
+    {
+     "localized_name": "synth_mask",
+     "name": "synth_mask",
+     "type": "MASK",
+     "link": 55
+    },
+    {
+     "localized_name": "shadow_mask",
+     "name": "shadow_mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "localized_name": "custom_mask",
+     "name": "custom_mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "localized_name": "source_transfer",
+     "name": "source_transfer",
+     "type": "COMBO",
+     "widget": {
+      "name": "source_transfer"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "generated_transfer",
+     "name": "generated_transfer",
+     "type": "COMBO",
+     "widget": {
+      "name": "generated_transfer"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "synth_mix",
+     "name": "synth_mix",
+     "type": "FLOAT",
+     "widget": {
+      "name": "synth_mix"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "color_match",
+     "name": "color_match",
+     "type": "COMBO",
+     "widget": {
+      "name": "color_match"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "final",
+     "name": "final",
+     "type": "IMAGE",
+     "links": [
+      56,
+      60
+     ]
+    },
+    {
+     "localized_name": "final_mask",
+     "name": "final_mask",
+     "type": "MASK",
+     "links": null
+    },
+    {
+     "localized_name": "source_contribution",
+     "name": "source_contribution",
+     "type": "IMAGE",
+     "links": null
+    },
+    {
+     "localized_name": "generated_contribution",
+     "name": "generated_contribution",
+     "type": "IMAGE",
+     "links": null
+    },
+    {
+     "localized_name": "report",
+     "name": "report",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LTXE_HDRPreservationComposite"
+   },
+   "widgets_values": [
+    "acescct",
+    "acescct",
+    1,
+    "per_channel_gain"
+   ],
+   "widgets_values_named": {
+    "source_transfer": "acescct",
+    "generated_transfer": "acescct",
+    "synth_mix": 1,
+    "color_match": "per_channel_gain"
+   }
+  },
+  {
+   "id": 33,
    "type": "VAEDecodeTiled",
    "pos": [
     2320,
@@ -1845,7 +2432,7 @@
     150
    ],
    "flags": {},
-   "order": 27,
+   "order": 32,
    "mode": 0,
    "inputs": [
     {
@@ -1903,8 +2490,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      45,
-      49
+      54
      ]
     }
    ],
@@ -1925,7 +2511,7 @@
    }
   },
   {
-   "id": 29,
+   "id": 34,
    "type": "LTXE_HDRDelivery",
    "pos": [
     2320,
@@ -1936,27 +2522,27 @@
     262
    ],
    "flags": {},
-   "order": 28,
+   "order": 33,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 45
+     "link": 56
     },
     {
      "localized_name": "plan",
      "name": "plan",
      "type": "LTXE_HDR_PLAN",
-     "link": 46
+     "link": 57
     },
     {
      "localized_name": "source_report_json",
      "name": "source_report_json",
      "shape": 7,
      "type": "STRING",
-     "link": 48
+     "link": 59
     },
     {
      "localized_name": "index",
@@ -1965,7 +2551,7 @@
      "widget": {
       "name": "index"
      },
-     "link": 47
+     "link": 58
     },
     {
      "localized_name": "shot_name",
@@ -2071,7 +2657,7 @@
    }
   },
   {
-   "id": 30,
+   "id": 35,
    "type": "ImageFromBatch",
    "pos": [
     2700,
@@ -2082,14 +2668,14 @@
     82
    ],
    "flags": {},
-   "order": 29,
+   "order": 34,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 49
+     "link": 60
     },
     {
      "localized_name": "batch_index",
@@ -2098,7 +2684,7 @@
      "widget": {
       "name": "batch_index"
      },
-     "link": 50
+     "link": 61
     },
     {
      "localized_name": "length",
@@ -2107,7 +2693,7 @@
      "widget": {
       "name": "length"
      },
-     "link": 51
+     "link": 62
     }
    ],
    "outputs": [
@@ -2116,8 +2702,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      52,
-      56
+      63,
+      67
      ]
     }
    ],
@@ -2135,7 +2721,7 @@
    }
   },
   {
-   "id": 31,
+   "id": 36,
    "type": "ImageColorSpace",
    "pos": [
     2700,
@@ -2146,14 +2732,14 @@
     82
    ],
    "flags": {},
-   "order": 30,
+   "order": 35,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 52
+     "link": 63
     },
     {
      "localized_name": "source",
@@ -2180,7 +2766,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      53
+      64
      ]
     }
    ],
@@ -2198,7 +2784,7 @@
    }
   },
   {
-   "id": 32,
+   "id": 37,
    "type": "CreateVideo",
    "pos": [
     2700,
@@ -2209,14 +2795,14 @@
     150
    ],
    "flags": {},
-   "order": 31,
+   "order": 36,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 53
+     "link": 64
     },
     {
      "localized_name": "audio",
@@ -2232,7 +2818,7 @@
      "widget": {
       "name": "fps"
      },
-     "link": 54
+     "link": 65
     },
     {
      "localized_name": "bit_depth",
@@ -2271,7 +2857,7 @@
      "name": "VIDEO",
      "type": "VIDEO",
      "links": [
-      55
+      66
      ]
     }
    ],
@@ -2293,7 +2879,7 @@
    }
   },
   {
-   "id": 33,
+   "id": 38,
    "type": "SaveVideo",
    "pos": [
     2700,
@@ -2304,14 +2890,14 @@
     106
    ],
    "flags": {},
-   "order": 32,
+   "order": 37,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "video",
      "name": "video",
      "type": "VIDEO",
-     "link": 55
+     "link": 66
     },
     {
      "localized_name": "filename_prefix",
@@ -2374,7 +2960,7 @@
    }
   },
   {
-   "id": 34,
+   "id": 39,
    "type": "LTXVHDRDecodePostprocess",
    "pos": [
     3080,
@@ -2385,14 +2971,14 @@
     222
    ],
    "flags": {},
-   "order": 33,
+   "order": 38,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 56
+     "link": 67
     },
     {
      "localized_name": "transfer",
@@ -2471,7 +3057,7 @@
      "name": "tonemapped",
      "type": "IMAGE",
      "links": [
-      57
+      68
      ]
     },
     {
@@ -2505,7 +3091,7 @@
    }
   },
   {
-   "id": 35,
+   "id": 40,
    "type": "CreateVideo",
    "pos": [
     3080,
@@ -2516,14 +3102,14 @@
     150
    ],
    "flags": {},
-   "order": 34,
+   "order": 39,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 57
+     "link": 68
     },
     {
      "localized_name": "audio",
@@ -2539,7 +3125,7 @@
      "widget": {
       "name": "fps"
      },
-     "link": 58
+     "link": 69
     },
     {
      "localized_name": "bit_depth",
@@ -2578,7 +3164,7 @@
      "name": "VIDEO",
      "type": "VIDEO",
      "links": [
-      59
+      70
      ]
     }
    ],
@@ -2600,7 +3186,7 @@
    }
   },
   {
-   "id": 36,
+   "id": 41,
    "type": "SaveVideo",
    "pos": [
     3080,
@@ -2611,14 +3197,14 @@
     106
    ],
    "flags": {},
-   "order": 35,
+   "order": 40,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "video",
      "name": "video",
      "type": "VIDEO",
-     "link": 59
+     "link": 70
     },
     {
      "localized_name": "filename_prefix",
@@ -2681,7 +3267,7 @@
    }
   },
   {
-   "id": 37,
+   "id": 42,
    "type": "MarkdownNote",
    "pos": [
     40,
@@ -2692,22 +3278,22 @@
     640
    ],
    "flags": {},
-   "order": 36,
+   "order": 41,
    "mode": 0,
    "inputs": [],
    "outputs": [],
    "properties": {},
    "widgets_values": [
-    "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- No highlight / shadow masks, preservation composite or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
+    "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- No 8-bit cleanup, shadow recovery or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
    ],
    "widgets_values_named": {
-    "text": "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- No highlight / shadow masks, preservation composite or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
+    "text": "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- No 8-bit cleanup, shadow recovery or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
    },
    "color": "#432",
    "bgcolor": "#653"
   },
   {
-   "id": 38,
+   "id": 43,
    "type": "MarkdownNote",
    "pos": [
     800,
@@ -2718,7 +3304,7 @@
     360
    ],
    "flags": {},
-   "order": 37,
+   "order": 42,
    "mode": 0,
    "inputs": [],
    "outputs": [],
@@ -3074,7 +3660,7 @@
    43,
    27,
    2,
-   28,
+   33,
    0,
    "LATENT"
   ],
@@ -3082,12 +3668,20 @@
    44,
    13,
    0,
-   28,
+   33,
    1,
    "VAE"
   ],
   [
    45,
+   2,
+   0,
+   28,
+   0,
+   "IMAGE"
+  ],
+  [
+   46,
    28,
    0,
    29,
@@ -3095,7 +3689,7 @@
    "IMAGE"
   ],
   [
-   46,
+   47,
    7,
    0,
    29,
@@ -3103,24 +3697,16 @@
    "LTXE_HDR_PLAN"
   ],
   [
-   47,
+   48,
    8,
    0,
    29,
-   3,
+   2,
    "INT"
   ],
   [
-   48,
-   3,
-   1,
-   29,
-   2,
-   "STRING"
-  ],
-  [
    49,
-   28,
+   29,
    0,
    30,
    0,
@@ -3128,31 +3714,31 @@
   ],
   [
    50,
-   9,
-   1,
-   30,
-   1,
-   "INT"
-  ],
-  [
-   51,
-   9,
-   2,
-   30,
-   2,
-   "INT"
-  ],
-  [
-   52,
    30,
    0,
    31,
    0,
+   "MASK"
+  ],
+  [
+   51,
+   30,
+   1,
+   31,
+   1,
+   "MASK"
+  ],
+  [
+   52,
+   29,
+   0,
+   31,
+   3,
    "IMAGE"
   ],
   [
    53,
-   31,
+   9,
    0,
    32,
    0,
@@ -3160,23 +3746,23 @@
   ],
   [
    54,
-   7,
-   3,
+   33,
+   0,
    32,
-   2,
-   "FLOAT"
+   1,
+   "IMAGE"
   ],
   [
    55,
+   31,
+   0,
    32,
-   0,
-   33,
-   0,
-   "VIDEO"
+   2,
+   "MASK"
   ],
   [
    56,
-   30,
+   32,
    0,
    34,
    0,
@@ -3184,25 +3770,113 @@
   ],
   [
    57,
+   7,
+   0,
    34,
+   1,
+   "LTXE_HDR_PLAN"
+  ],
+  [
+   58,
+   8,
+   0,
+   34,
+   3,
+   "INT"
+  ],
+  [
+   59,
+   3,
+   1,
+   34,
+   2,
+   "STRING"
+  ],
+  [
+   60,
+   32,
    0,
    35,
    0,
    "IMAGE"
   ],
   [
-   58,
+   61,
+   9,
+   1,
+   35,
+   1,
+   "INT"
+  ],
+  [
+   62,
+   9,
+   2,
+   35,
+   2,
+   "INT"
+  ],
+  [
+   63,
+   35,
+   0,
+   36,
+   0,
+   "IMAGE"
+  ],
+  [
+   64,
+   36,
+   0,
+   37,
+   0,
+   "IMAGE"
+  ],
+  [
+   65,
    7,
    3,
-   35,
+   37,
    2,
    "FLOAT"
   ],
   [
-   59,
+   66,
+   37,
+   0,
+   38,
+   0,
+   "VIDEO"
+  ],
+  [
+   67,
    35,
    0,
-   36,
+   39,
+   0,
+   "IMAGE"
+  ],
+  [
+   68,
+   39,
+   0,
+   40,
+   0,
+   "IMAGE"
+  ],
+  [
+   69,
+   7,
+   3,
+   40,
+   2,
+   "FLOAT"
+  ],
+  [
+   70,
+   40,
+   0,
+   41,
    0,
    "VIDEO"
   ]
@@ -3227,7 +3901,7 @@
     400,
     60,
     787.3218750000001,
-    926
+    1146
    ],
    "color": "#8A8",
    "flags": {}
@@ -3282,6 +3956,18 @@
   },
   {
    "id": 7,
+   "title": "6b Source preservation (LTX-E)",
+   "bounding": [
+    2300,
+    940,
+    522.4253906250001,
+    890
+   ],
+   "color": "#3a7a6a",
+   "flags": {}
+  },
+  {
+   "id": 8,
    "title": "7 HLG clip + preview (per window)",
    "bounding": [
     2680,

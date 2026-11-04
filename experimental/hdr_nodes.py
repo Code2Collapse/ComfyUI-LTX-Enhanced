@@ -12,7 +12,7 @@ import os
 
 import torch
 
-from ..ltx_enhanced.hdr import chunk_plan, colorspace, exr_writer, source_audit
+from ..ltx_enhanced.hdr import chunk_plan, colorspace, exr_writer, masks, source_audit
 
 CATEGORY = "LTX Enhanced/HDR"
 PLAN_TYPE = "LTXE_HDR_PLAN"
@@ -243,12 +243,145 @@ class LTXEHDRDelivery:
         return {"ui": {"text": [summary]}, "result": (out.contiguous(), d.first_number, d.last_number, summary)}
 
 
+class LTXEHDRHighlightAnalyzer:
+    DESCRIPTION = ("Finds clipped highlights in the SDR source: a pixel is clipped only when a channel sits at the code "
+                   "ceiling, so a bright but unclipped area stays out of the clip mask. A separate soft near-white map "
+                   "covers the area just below. Feed it the source resized like the guide and cut with the same plan "
+                   "window. The masks never go into the model; they are used after generation. " + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("MASK", "MASK", "IMAGE", "STRING")
+    RETURN_NAMES = ("clip_mask", "highlight_map", "preview", "report")
+    OUTPUT_NODE = True
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = masks.HighlightSettings()
+        return {"required": {
+            "images": ("IMAGE", {"tooltip": "SDR source frames (display values 0-1), the same window and size as the "
+                                            "generated frames."}),
+            "hard_clip": ("FLOAT", {"default": d.hard_clip, "min": 0.5, "max": 1.0, "step": 0.001,
+                                    "tooltip": "A channel at or above this value counts as clipped."}),
+            "near_white": ("FLOAT", {"default": d.near_white, "min": 0.5, "max": 1.0, "step": 0.001,
+                                     "tooltip": "Luma where the near-white map starts rising (it reaches 1 at the "
+                                                "clip level)."}),
+            "channel_policy": (masks.CHANNEL_POLICIES, {"default": d.channel_policy, "tooltip": (
+                "any = one clipped channel is enough; all = every channel; luma = the luma value.")}),
+            "expand_px": ("INT", {"default": d.expand_px, "min": 0, "max": 128,
+                                  "tooltip": "Grow the clip mask by this many pixels."}),
+            "feather_px": ("INT", {"default": d.feather_px, "min": 0, "max": 128,
+                                   "tooltip": "Soften the clip-mask edge by this many pixels."}),
+            "temporal_frames": ("INT", {"default": d.temporal_frames, "min": 1, "max": 31, "step": 2,
+                                        "tooltip": "Average the mask over this many frames (1 = off)."}),
+        }, "optional": {
+            "user_mask": ("MASK", {"tooltip": "Optional mask to add, subtract or replace."}),
+            "user_mode": (masks.USER_MODES, {"default": "add", "tooltip": "How the user mask is applied."}),
+        }}
+
+    def run(self, images, hard_clip, near_white, channel_policy, expand_px, feather_px, temporal_frames,
+            user_mask=None, user_mode="add"):
+        st = masks.HighlightSettings(hard_clip, near_white, channel_policy, expand_px, feather_px, temporal_frames)
+        clip, hmap, rep = masks.analyze_highlights(images, st, user_mask, user_mode)
+        text = (f"{rep['frames_with_clipping']} of {rep['frames']} frames have clipped pixels; largest clipped share "
+                f"{max(rep['clipped_fraction']) * 100:.2f}%.")
+        return {"ui": {"text": [text]},
+                "result": (clip, hmap, masks.overlay(images, clip), masks.report_json(rep))}
+
+
+class LTXEHDRSynthMask:
+    DESCRIPTION = ("Decides where the generated HDR is used in the final image: the clip mask, optionally the "
+                   "near-white map, grown, feathered and smoothed over time, plus your own mask. The model still sees "
+                   "the whole frame; this mask is only used by the Source-Preservation Composite. " + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("MASK", "IMAGE", "STRING")
+    RETURN_NAMES = ("synth_mask", "preview", "mask_qc")
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = masks.SynthSettings()
+        return {"required": {
+            "use_clip": ("BOOLEAN", {"default": d.use_clip, "tooltip": "Use the clipped-highlight mask."}),
+            "include_near_white": ("BOOLEAN", {"default": d.include_near_white,
+                                               "tooltip": "Also use the soft near-white map."}),
+            "near_white_weight": ("FLOAT", {"default": d.near_white_weight, "min": 0.0, "max": 1.0, "step": 0.05,
+                                            "tooltip": "How much of the near-white map is used."}),
+            "grow_px": ("INT", {"default": d.grow_px, "min": -128, "max": 128,
+                                "tooltip": "Expand (positive) or contract (negative) the mask, in pixels."}),
+            "feather_px": ("INT", {"default": d.feather_px, "min": 0, "max": 256,
+                                   "tooltip": "Soft edge width in pixels."}),
+            "temporal_frames": ("INT", {"default": d.temporal_frames, "min": 1, "max": 31, "step": 2,
+                                        "tooltip": "Average the mask over this many frames (1 = off)."}),
+        }, "optional": {
+            "clip_mask": ("MASK", {"tooltip": "From LTXE HDR Highlight Analyzer."}),
+            "highlight_map": ("MASK", {"tooltip": "From LTXE HDR Highlight Analyzer."}),
+            "user_mask": ("MASK", {"tooltip": "Optional manual correction."}),
+            "user_mode": (masks.USER_MODES, {"default": "add", "tooltip": "How the user mask is applied."}),
+            "preview_images": ("IMAGE", {"tooltip": "Optional: the source frames, for the red preview."}),
+        }}
+
+    def run(self, use_clip, include_near_white, near_white_weight, grow_px, feather_px, temporal_frames,
+            clip_mask=None, highlight_map=None, user_mask=None, user_mode="add", preview_images=None):
+        st = masks.SynthSettings(use_clip, include_near_white, near_white_weight, grow_px, feather_px,
+                                 temporal_frames)
+        m, qc = masks.synth_mask(clip_mask, highlight_map, st, user_mask, user_mode)
+        if preview_images is not None:
+            prev = masks.overlay(preview_images, m)
+        else:
+            prev = m.unsqueeze(-1).expand(*m.shape, 3).contiguous()
+        return (m, prev, masks.report_json(qc))
+
+
+class LTXEHDRPreservationComposite:
+    DESCRIPTION = ("Keeps the approved source outside the synth mask and takes the generated HDR inside it, in linear "
+                   "ACEScg. Where the mask is 0 the result is exactly the source in that space. An optional "
+                   "per-channel gain matches the generated image to the source (the source is never changed). The "
+                   "output keeps the generated input's encoding, so LTXE HDR Delivery can write it. " + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("IMAGE", "MASK", "IMAGE", "IMAGE", "STRING")
+    RETURN_NAMES = ("final", "final_mask", "source_contribution", "generated_contribution", "report")
+    OUTPUT_NODE = True
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = masks.CompositeSettings()
+        return {"required": {
+            "source": ("IMAGE", {"tooltip": "The source window as the model saw it (LTXE HDR Take Segment window, "
+                                            "ACEScct)."}),
+            "generated": ("IMAGE", {"tooltip": "The decoded window (VAE Decode output)."}),
+            "synth_mask": ("MASK", {"tooltip": "From LTXE HDR Synth Mask (same window, same size)."}),
+            "source_transfer": (masks.TRANSFERS, {"default": d.source_transfer,
+                                                  "tooltip": "Encoding of the source input."}),
+            "generated_transfer": (masks.TRANSFERS, {"default": d.generated_transfer, "tooltip": (
+                "Encoding of the generated input; the output uses the same.")}),
+            "synth_mix": ("FLOAT", {"default": d.synth_mix, "min": 0.0, "max": 1.0, "step": 0.01,
+                                    "tooltip": "Scales the mask (1 = full generated contribution inside it)."}),
+            "color_match": (masks.COLOR_MATCH, {"default": d.color_match, "tooltip": (
+                "per_channel_gain = scale the generated image to the source exposure, measured outside the mask.")}),
+        }, "optional": {
+            "shadow_mask": ("MASK", {"tooltip": "Optional: also take the generated image here (shadow recovery)."}),
+            "custom_mask": ("MASK", {"tooltip": "Optional: also take the generated image here."}),
+        }}
+
+    def run(self, source, generated, synth_mask, source_transfer, generated_transfer, synth_mix, color_match,
+            shadow_mask=None, custom_mask=None):
+        st = masks.CompositeSettings(synth_mix, color_match, source_transfer, generated_transfer)
+        out, m, sp, gp, rep = masks.composite(source, generated, synth_mask, st, shadow_mask, custom_mask)
+        text = (f"gains {rep['gains']}; generated area {rep['mask_coverage'] * 100:.1f}%; preserved area matches the "
+                f"source exactly in ACEScg (max diff {rep['preserved_max_abs_diff_working']:.2g}).")
+        return {"ui": {"text": [text]}, "result": (out.contiguous(), m, sp, gp, masks.report_json(rep))}
+
+
 NODE_CLASS_MAPPINGS = {
     "LTXE_HDRSourceAudit": LTXEHDRSourceAudit,
     "LTXE_HDRInputColor": LTXEHDRInputColor,
     "LTXE_HDRChunkPlanner": LTXEHDRChunkPlanner,
     "LTXE_HDRTakeSegment": LTXEHDRTakeSegment,
     "LTXE_HDRDelivery": LTXEHDRDelivery,
+    "LTXE_HDRHighlightAnalyzer": LTXEHDRHighlightAnalyzer,
+    "LTXE_HDRSynthMask": LTXEHDRSynthMask,
+    "LTXE_HDRPreservationComposite": LTXEHDRPreservationComposite,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRSourceAudit": "LTXE HDR Source Audit (experimental)",
@@ -256,4 +389,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRChunkPlanner": "LTXE HDR Chunk Planner (experimental)",
     "LTXE_HDRTakeSegment": "LTXE HDR Take Segment (experimental)",
     "LTXE_HDRDelivery": "LTXE HDR Delivery (experimental)",
+    "LTXE_HDRHighlightAnalyzer": "LTXE HDR Highlight Analyzer (experimental)",
+    "LTXE_HDRSynthMask": "LTXE HDR Synth Mask (experimental)",
+    "LTXE_HDRPreservationComposite": "LTXE HDR Source-Preservation Composite (experimental)",
 }

@@ -74,6 +74,36 @@ budgets come from P5 GPU benchmarks.
 - Version isolation: the planner and dispatch carry `model_family` = `ltx-2.5-sdr-to-hdr`; LTX-2.3 HDR (LogC3) is a
   different stack and is refused by name if mixed in.
 
+## 6b. P2 slice 1 design: highlight masks and source-preservation composite (spec 4.5, 4.6, 4.9)
+
+The IC-LoRA always sees the full frame (spec 4.6). Masks only decide, AFTER generation, which generated pixels reach
+the final image.
+
+- **Alignment.** Masks are computed on the SDR source resized with the same settings as the guide (scale to a
+  multiple of 32, lanczos) and cut with the same plan and window index, so they line up pixel for pixel with the
+  generated window. Every per-window node checks the frame count against the plan.
+- **Highlight Analyzer (4.5).** `clip` = a channel at or above the hard-clip code (default 0.998). The channel policy
+  is any / all / luma. A naturally bright pixel below the ceiling is never in the clip mask. `near_white` is a
+  separate soft ramp on luma (default 0.92 up to the clip level). Expansion is a max-filter in pixels, feather is a
+  box blur, and temporal smoothing is a centred mean over n frames. The user mask can add, subtract or replace. The
+  report gives per-frame clipped and near-white fractions and the frame-to-frame mask change.
+- **Synth Mask (4.6).** Built from the clip mask plus, optionally, the near-white ramp. It has signed grow
+  (expand / contract), feather, temporal smoothing and user add / subtract. Output: SYNTH_MASK, a red-overlay preview
+  and mask QC (coverage and flicker).
+- **Source-Preservation Composite (4.9).** Works in linear ACEScg.
+  - The source in working space is the decode of the guide window (the frames the model saw: core sRGB -> ACEScct,
+    then this pack's exact ACEScct -> ACEScg). The generated image is the decode of the VAE output.
+  - Optional colour match: a per-channel gain, estimated once per window as the median of generated / source over
+    trusted pixels. Trusted means mask < 0.05, not crushed, not near-white. The gain is applied to the GENERATED
+    image, so the approved source is never moved.
+  - `final = src * (1 - m) + gen * m` with `m = synth_mix * mask`, combined with the optional shadow / custom masks.
+    The result is re-encoded to the input encoding so LTXE HDR Delivery still trims and converts it.
+  - Report: in the preserved region (m == 0), the maximum difference to the source in the working space (0 = exact
+    there) and after the encode round trip (float error). Also the mean difference in the generated region, the
+    gains, and coverage. Bit-exactness is claimed only in the working space, never across encodings.
+- **Not in this slice:** 8-bit cleanup (4.3), shadow recovery (4.4), seam keyframes (4.8: no official ComfyUI node
+  found at 220e1d4), seam exposure match (4.10), QC (4.12).
+
 ## 7. Status
 
 | Piece | Status |
@@ -81,4 +111,5 @@ budgets come from P5 GPU benchmarks.
 | Upstream facts (section 1) | verified by reading source + workflows (no GPU run) |
 | Source audit, input colour, chunk planner | P1, this slice |
 | Delivery (ACEScg EXR, source frame numbers, sidecar) + `LTXE_SDR_to_HDR_Pro.json` | P1 (L9.131): CPU tests, executor run, workflow load-validated |
+| Highlight Analyzer, Synth Mask, Source-Preservation Composite (section 6b) | P2 slice 1 (L9.132): CPU tests, executor run, wired into the Pro workflow |
 | Model run on real weights | NOT RUN (needs LTX-2.5 22B on a GPU) |
