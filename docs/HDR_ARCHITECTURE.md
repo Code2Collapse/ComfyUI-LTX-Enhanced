@@ -102,7 +102,7 @@ the final image.
     there) and after the encode round trip (float error). Also the mean difference in the generated region, the
     gains, and coverage. Bit-exactness is claimed only in the working space, never across encodings.
 - **Not in this slice:** seam keyframes (4.8: no official ComfyUI node
-  found at 220e1d4), seam exposure match (4.10), QC (4.12).
+  found at 220e1d4), QC (4.12).
 
 ## 7. Status
 
@@ -114,4 +114,5 @@ the final image.
 | Highlight Analyzer, Synth Mask, Source-Preservation Composite (section 6b) | P2 slice 1 (L9.132): CPU tests, executor run, wired into the Pro workflow |
 | 8-bit Cleanup (projection onto the source quantisation cells, `ltx_enhanced/hdr/cleanup.py`) | P2 (L9.132): round trip exact, measured on ramps (docs/evidence/L9.132/cleanup_measure.json), executor run |
 | Shadow Recovery (`ltx_enhanced/hdr/shadows.py`: crushed mask, local exposure from the just-above-black ring, never below the source; off by default, feeds the composite's source) | P2 (L9.132): CPU tests + mutation check, executor run |
+| Seam Exposure Match (`ltx_enhanced/hdr/seams.py`: measured on the frames the previous window already delivered, faded over seam_width, refused above max_stops) | P2 (L9.132): CPU tests + mutation check, two-run executor test |
 | Model run on real weights | NOT RUN (needs LTX-2.5 22B on a GPU) |

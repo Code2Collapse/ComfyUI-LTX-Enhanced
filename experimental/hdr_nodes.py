@@ -12,7 +12,7 @@ import os
 
 import torch
 
-from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, shadows, source_audit
+from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, seams, shadows, source_audit
 
 CATEGORY = "LTX Enhanced/HDR"
 PLAN_TYPE = "LTXE_HDR_PLAN"
@@ -218,7 +218,7 @@ class LTXEHDRDelivery:
         folder = exr_writer.safe_folder(folder_paths.get_output_directory(), output_folder)
         kept = images[d.keep_offset:d.keep_offset + d.keep_count]
         out = exr_writer.to_output_space(kept, input_transfer, output_space)
-        digits = exr_writer.frame_digits(d.last_number)
+        digits = exr_writer.shot_digits(p)       # one padding for the whole shot (all windows)
         fps = exr_writer.fps_fraction(p.source_fps)
         try:
             src = json.loads(source_report_json) if str(source_report_json or "").strip() else {}
@@ -459,6 +459,84 @@ class LTXEHDRShadowRecovery:
         return (out, m, json.dumps(rep, indent=1))
 
 
+class LTXEHDRSeamExposureMatch:
+    DESCRIPTION = ("Matches this window's exposure to the window before it at the seam. The frames this window "
+                   "generates before its first delivered frame were already written by the previous window (EXR in the "
+                   "same output folder); the difference on them is corrected at the seam and faded out over "
+                   "seam_width frames, so the rest of the window is untouched. Run the windows in order; window 0 and "
+                   "a missing previous window pass through (the report says why). " + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("IMAGE", "STRING")
+    RETURN_NAMES = ("matched", "report")
+    OUTPUT_NODE = True
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = seams.SeamSettings()
+        return {"required": {
+            "images": ("IMAGE", {"tooltip": "This window, every generated frame (e.g. the composite's final)."}),
+            "plan": (PLAN_TYPE, {"tooltip": "From LTXE HDR Chunk Planner."}),
+            "index": ("INT", {"default": 0, "min": 0, "max": 100_000, "tooltip": "This window's index."}),
+            "shot_name": ("STRING", {"default": "shot", "tooltip": "The same shot name as on LTXE HDR Delivery."}),
+            "output_folder": ("STRING", {"default": "ltxe_hdr",
+                                         "tooltip": "The same output folder as on LTXE HDR Delivery."}),
+            "transfer": (masks.TRANSFERS, {"default": "acescct", "tooltip": "Encoding of the images input."}),
+            "enabled": ("BOOLEAN", {"default": d.enabled, "tooltip": "Off = pass through."}),
+            "mode": (seams.MODES, {"default": d.mode, "tooltip": (
+                "luma = one exposure gain; per_channel = one per colour channel; local = a smooth gain map.")}),
+            "seam_width": ("INT", {"default": d.seam_width, "min": 0, "max": 512,
+                                   "tooltip": "Frames over which the correction fades out after the seam."}),
+            "protect_above": ("FLOAT", {"default": d.protect_above, "min": 0.1, "max": 1000.0, "step": 0.1, "tooltip": (
+                "Linear ACEScg values above this (reconstructed highlights) are not used to measure.")}),
+            "max_stops": ("FLOAT", {"default": d.max_stops, "min": 0.1, "max": 8.0, "step": 0.1, "tooltip": (
+                "A difference larger than this is reported, not corrected (it is not a seam).")}),
+        }}
+
+    def run(self, images, plan, index, shot_name, output_folder, transfer, enabled, mode, seam_width, protect_above,
+            max_stops):
+        import folder_paths  # ComfyUI; imported here so the module loads without it
+
+        p = chunk_plan.SegmentPlan.from_dict(plan if isinstance(plan, dict) else json.loads(plan))
+        d = exr_writer.delivery_for(p, index)
+        seg = p.segments[d.index]
+        if int(images.shape[0]) != seg.gen_frames:
+            raise ValueError(f"Window {d.index} was planned as {seg.gen_frames} frames but {int(images.shape[0])} "
+                             "came in. Feed THIS window (same plan, same index).")
+        st = seams.SeamSettings(enabled, mode, seam_width, protect_above, 0.002, max_stops)
+        prev, why = None, ""
+        n_ov = d.keep_offset
+        if d.index == 0 or n_ov <= 0:
+            why = "first window (nothing before it)" if d.index == 0 else "this window has no overlap"
+        else:
+            shot = exr_writer.safe_name(shot_name, "shot_name")
+            folder = exr_writer.safe_folder(folder_paths.get_output_directory(), output_folder)
+            side = os.path.join(folder, "metadata", f"{shot}_seg{d.index - 1:03d}.json")
+            digits = exr_writer.shot_digits(p)
+            first = int(p.first_frame_number) + seg.gen_start
+            paths = [exr_writer.frame_path(folder, shot, "hdr", first + i, digits) for i in range(n_ov)]
+            missing = [os.path.basename(x) for x in paths if not os.path.isfile(x)]
+            if missing or not os.path.isfile(side):
+                why = (f"window {d.index - 1} is not delivered yet (missing {missing[:2] or [os.path.basename(side)]}"
+                       "): run the windows in order")
+            else:
+                with open(side, encoding="utf-8") as f:
+                    space = json.load(f).get("output_color_space", "acescg")
+                arr = torch.from_numpy(__import__("numpy").stack([exr_writer.read_exr(x) for x in paths]))
+                prev = colorspace.acescct_decode(arr) if space == "acescct" else arr.float()
+        if prev is None:
+            rep = {"applied": False, "reason": why, "settings": st.__dict__}
+            out = images
+        else:
+            out, rep = seams.match(images, prev, n_ov, d.keep_offset, st, transfer)
+        if rep.get("applied"):
+            text = (f"window {d.index}: seam mismatch {rep['mismatch_stops_before']:.3f} -> "
+                    f"{rep['mismatch_stops_after']:.3f} stops, faded over {seam_width} frames.")
+        else:
+            text = f"window {d.index}: unchanged - {rep.get('reason')}"
+        return {"ui": {"text": [text]}, "result": (out, json.dumps(rep, indent=1, default=str))}
+
+
 NODE_CLASS_MAPPINGS = {
     "LTXE_HDRSourceAudit": LTXEHDRSourceAudit,
     "LTXE_HDRInputColor": LTXEHDRInputColor,
@@ -470,6 +548,7 @@ NODE_CLASS_MAPPINGS = {
     "LTXE_HDRPreservationComposite": LTXEHDRPreservationComposite,
     "LTXE_HDR8bitCleanup": LTXEHDR8bitCleanup,
     "LTXE_HDRShadowRecovery": LTXEHDRShadowRecovery,
+    "LTXE_HDRSeamExposureMatch": LTXEHDRSeamExposureMatch,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRSourceAudit": "LTXE HDR Source Audit (experimental)",
@@ -482,4 +561,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRPreservationComposite": "LTXE HDR Source-Preservation Composite (experimental)",
     "LTXE_HDR8bitCleanup": "LTXE HDR 8-bit Cleanup (experimental)",
     "LTXE_HDRShadowRecovery": "LTXE HDR Shadow Recovery (experimental)",
+    "LTXE_HDRSeamExposureMatch": "LTXE HDR Seam Exposure Match (experimental)",
 }

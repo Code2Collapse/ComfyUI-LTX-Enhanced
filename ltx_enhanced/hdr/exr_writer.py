@@ -80,6 +80,27 @@ def frame_digits(last_number: int) -> int:
     return max(4, len(str(int(last_number))))
 
 
+def shot_digits(plan) -> int:
+    """Padding for the WHOLE shot (its last source frame), so every window uses the same file names."""
+    return frame_digits(int(plan.first_frame_number) + int(plan.total_frames) - 1)
+
+
+def read_exr(path: str):
+    """One RGB EXR frame as a (H, W, 3) float32 array."""
+    try:
+        import OpenImageIO as oiio  # Apache-2.0; optional
+    except Exception as exc:  # noqa: BLE001
+        raise RuntimeError("Reading EXR needs OpenImageIO (pip package 'OpenImageIO').") from exc
+    inp = oiio.ImageInput.open(path)
+    if inp is None:
+        raise FileNotFoundError(f"Could not open {path}: {oiio.geterror()}")
+    try:
+        px = inp.read_image(oiio.FLOAT)
+    finally:
+        inp.close()
+    return px[..., :3]
+
+
 def frame_path(folder: str, shot: str, layer: str, number: int, digits: int) -> str:
     return os.path.join(folder, layer, f"{shot}_{layer}_{int(number):0{digits}d}.exr")
 
