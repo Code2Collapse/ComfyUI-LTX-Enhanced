@@ -1,8 +1,8 @@
 {
- "id": "303b303c-491d-4bee-9f87-ae50d08372be",
+ "id": "f6f3a0cd-2b13-4dd0-b20c-c856495f9709",
  "revision": 0,
- "last_node_id": 44,
- "last_link_id": 72,
+ "last_node_id": 45,
+ "last_link_id": 75,
  "nodes": [
   {
    "id": 1,
@@ -331,7 +331,7 @@
      "name": "report_json",
      "type": "STRING",
      "links": [
-      61
+      64
      ]
     },
     {
@@ -655,7 +655,7 @@
      "links": [
       12,
       49,
-      59
+      62
      ]
     },
     {
@@ -677,8 +677,8 @@
      "name": "output_fps",
      "type": "FLOAT",
      "links": [
-      67,
-      71
+      70,
+      74
      ]
     },
     {
@@ -743,7 +743,7 @@
      "links": [
       13,
       50,
-      60
+      63
      ]
     }
    ],
@@ -812,7 +812,7 @@
      "name": "keep_offset",
      "type": "INT",
      "links": [
-      63
+      66
      ]
     },
     {
@@ -820,7 +820,7 @@
      "name": "keep_count",
      "type": "INT",
      "links": [
-      64
+      67
      ]
     },
     {
@@ -2082,7 +2082,8 @@
      "type": "IMAGE",
      "links": [
       51,
-      54
+      54,
+      57
      ]
     },
     {
@@ -2374,7 +2375,7 @@
      "name": "synth_mask",
      "type": "MASK",
      "links": [
-      57
+      60
      ]
     },
     {
@@ -2414,14 +2415,14 @@
   },
   {
    "id": 33,
-   "type": "LTXE_HDRPreservationComposite",
+   "type": "LTXE_HDRShadowRecovery",
    "pos": [
     2320,
     1600
    ],
    "size": [
-    482.425390625,
-    210
+    389.9078125,
+    242
    ],
    "flags": {},
    "order": 32,
@@ -2440,10 +2441,152 @@
      "link": 56
     },
     {
+     "localized_name": "display",
+     "name": "display",
+     "type": "IMAGE",
+     "link": 57
+    },
+    {
+     "localized_name": "enabled",
+     "name": "enabled",
+     "type": "BOOLEAN",
+     "widget": {
+      "name": "enabled"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "black_threshold",
+     "name": "black_threshold",
+     "type": "FLOAT",
+     "widget": {
+      "name": "black_threshold"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "strength",
+     "name": "strength",
+     "type": "FLOAT",
+     "widget": {
+      "name": "strength"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "transition_px",
+     "name": "transition_px",
+     "type": "INT",
+     "widget": {
+      "name": "transition_px"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "local_radius",
+     "name": "local_radius",
+     "type": "INT",
+     "widget": {
+      "name": "local_radius"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "source_transfer",
+     "name": "source_transfer",
+     "type": "COMBO",
+     "widget": {
+      "name": "source_transfer"
+     },
+     "link": null
+    },
+    {
+     "localized_name": "generated_transfer",
+     "name": "generated_transfer",
+     "type": "COMBO",
+     "widget": {
+      "name": "generated_transfer"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "recovered",
+     "name": "recovered",
+     "type": "IMAGE",
+     "links": [
+      58
+     ]
+    },
+    {
+     "localized_name": "shadow_mask",
+     "name": "shadow_mask",
+     "type": "MASK",
+     "links": null
+    },
+    {
+     "localized_name": "report",
+     "name": "report",
+     "type": "STRING",
+     "links": null
+    }
+   ],
+   "title": "Shadow Recovery (off by default)",
+   "properties": {
+    "Node name for S&R": "LTXE_HDRShadowRecovery"
+   },
+   "widgets_values": [
+    false,
+    0.004,
+    1,
+    8,
+    32,
+    "acescct",
+    "acescct"
+   ],
+   "widgets_values_named": {
+    "enabled": false,
+    "black_threshold": 0.004,
+    "strength": 1,
+    "transition_px": 8,
+    "local_radius": 32,
+    "source_transfer": "acescct",
+    "generated_transfer": "acescct"
+   }
+  },
+  {
+   "id": 34,
+   "type": "LTXE_HDRPreservationComposite",
+   "pos": [
+    2320,
+    1960
+   ],
+   "size": [
+    482.425390625,
+    210
+   ],
+   "flags": {},
+   "order": 33,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "source",
+     "name": "source",
+     "type": "IMAGE",
+     "link": 58
+    },
+    {
+     "localized_name": "generated",
+     "name": "generated",
+     "type": "IMAGE",
+     "link": 59
+    },
+    {
      "localized_name": "synth_mask",
      "name": "synth_mask",
      "type": "MASK",
-     "link": 57
+     "link": 60
     },
     {
      "localized_name": "shadow_mask",
@@ -2502,8 +2645,8 @@
      "name": "final",
      "type": "IMAGE",
      "links": [
-      58,
-      62
+      61,
+      65
      ]
     },
     {
@@ -2548,7 +2691,7 @@
    }
   },
   {
-   "id": 34,
+   "id": 35,
    "type": "VAEDecodeTiled",
    "pos": [
     2320,
@@ -2559,7 +2702,7 @@
     150
    ],
    "flags": {},
-   "order": 33,
+   "order": 34,
    "mode": 0,
    "inputs": [
     {
@@ -2617,7 +2760,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      56
+      56,
+      59
      ]
     }
    ],
@@ -2638,7 +2782,7 @@
    }
   },
   {
-   "id": 35,
+   "id": 36,
    "type": "LTXE_HDRDelivery",
    "pos": [
     2320,
@@ -2649,27 +2793,27 @@
     262
    ],
    "flags": {},
-   "order": 34,
+   "order": 35,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 58
+     "link": 61
     },
     {
      "localized_name": "plan",
      "name": "plan",
      "type": "LTXE_HDR_PLAN",
-     "link": 59
+     "link": 62
     },
     {
      "localized_name": "source_report_json",
      "name": "source_report_json",
      "shape": 7,
      "type": "STRING",
-     "link": 61
+     "link": 64
     },
     {
      "localized_name": "index",
@@ -2678,7 +2822,7 @@
      "widget": {
       "name": "index"
      },
-     "link": 60
+     "link": 63
     },
     {
      "localized_name": "shot_name",
@@ -2784,7 +2928,7 @@
    }
   },
   {
-   "id": 36,
+   "id": 37,
    "type": "ImageFromBatch",
    "pos": [
     2700,
@@ -2795,14 +2939,14 @@
     82
    ],
    "flags": {},
-   "order": 35,
+   "order": 36,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 62
+     "link": 65
     },
     {
      "localized_name": "batch_index",
@@ -2811,7 +2955,7 @@
      "widget": {
       "name": "batch_index"
      },
-     "link": 63
+     "link": 66
     },
     {
      "localized_name": "length",
@@ -2820,7 +2964,7 @@
      "widget": {
       "name": "length"
      },
-     "link": 64
+     "link": 67
     }
    ],
    "outputs": [
@@ -2829,8 +2973,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      65,
-      69
+      68,
+      72
      ]
     }
    ],
@@ -2848,7 +2992,7 @@
    }
   },
   {
-   "id": 37,
+   "id": 38,
    "type": "ImageColorSpace",
    "pos": [
     2700,
@@ -2859,14 +3003,14 @@
     82
    ],
    "flags": {},
-   "order": 36,
+   "order": 37,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 65
+     "link": 68
     },
     {
      "localized_name": "source",
@@ -2893,7 +3037,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      66
+      69
      ]
     }
    ],
@@ -2911,7 +3055,7 @@
    }
   },
   {
-   "id": 38,
+   "id": 39,
    "type": "CreateVideo",
    "pos": [
     2700,
@@ -2922,14 +3066,14 @@
     150
    ],
    "flags": {},
-   "order": 37,
+   "order": 38,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 66
+     "link": 69
     },
     {
      "localized_name": "audio",
@@ -2945,7 +3089,7 @@
      "widget": {
       "name": "fps"
      },
-     "link": 67
+     "link": 70
     },
     {
      "localized_name": "bit_depth",
@@ -2984,7 +3128,7 @@
      "name": "VIDEO",
      "type": "VIDEO",
      "links": [
-      68
+      71
      ]
     }
    ],
@@ -3006,7 +3150,7 @@
    }
   },
   {
-   "id": 39,
+   "id": 40,
    "type": "SaveVideo",
    "pos": [
     2700,
@@ -3017,14 +3161,14 @@
     106
    ],
    "flags": {},
-   "order": 38,
+   "order": 39,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "video",
      "name": "video",
      "type": "VIDEO",
-     "link": 68
+     "link": 71
     },
     {
      "localized_name": "filename_prefix",
@@ -3087,7 +3231,7 @@
    }
   },
   {
-   "id": 40,
+   "id": 41,
    "type": "LTXVHDRDecodePostprocess",
    "pos": [
     3080,
@@ -3098,14 +3242,14 @@
     222
    ],
    "flags": {},
-   "order": 39,
+   "order": 40,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 69
+     "link": 72
     },
     {
      "localized_name": "transfer",
@@ -3184,7 +3328,7 @@
      "name": "tonemapped",
      "type": "IMAGE",
      "links": [
-      70
+      73
      ]
     },
     {
@@ -3218,7 +3362,7 @@
    }
   },
   {
-   "id": 41,
+   "id": 42,
    "type": "CreateVideo",
    "pos": [
     3080,
@@ -3229,14 +3373,14 @@
     150
    ],
    "flags": {},
-   "order": 40,
+   "order": 41,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 70
+     "link": 73
     },
     {
      "localized_name": "audio",
@@ -3252,7 +3396,7 @@
      "widget": {
       "name": "fps"
      },
-     "link": 71
+     "link": 74
     },
     {
      "localized_name": "bit_depth",
@@ -3291,7 +3435,7 @@
      "name": "VIDEO",
      "type": "VIDEO",
      "links": [
-      72
+      75
      ]
     }
    ],
@@ -3313,7 +3457,7 @@
    }
   },
   {
-   "id": 42,
+   "id": 43,
    "type": "SaveVideo",
    "pos": [
     3080,
@@ -3324,14 +3468,14 @@
     106
    ],
    "flags": {},
-   "order": 41,
+   "order": 42,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "video",
      "name": "video",
      "type": "VIDEO",
-     "link": 72
+     "link": 75
     },
     {
      "localized_name": "filename_prefix",
@@ -3394,7 +3538,7 @@
    }
   },
   {
-   "id": 43,
+   "id": 44,
    "type": "MarkdownNote",
    "pos": [
     40,
@@ -3405,22 +3549,22 @@
     640
    ],
    "flags": {},
-   "order": 42,
+   "order": 43,
    "mode": 0,
    "inputs": [],
    "outputs": [],
    "properties": {},
    "widgets_values": [
-    "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- No shadow recovery or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
+    "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- **Shadow recovery** (group 6b) is off by default: turn it on to use generated detail where the source is crushed\n  to black, at the source's local exposure.\n- No seam exposure match or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
    ],
    "widgets_values_named": {
-    "text": "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- No shadow recovery or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
+    "text": "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- Seams between windows are hard cuts at the planned boundaries (no exposure match or blend yet).\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- **Shadow recovery** (group 6b) is off by default: turn it on to use generated detail where the source is crushed\n  to black, at the source's local exposure.\n- No seam exposure match or QC report yet.\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
    },
    "color": "#432",
    "bgcolor": "#653"
   },
   {
-   "id": 44,
+   "id": 45,
    "type": "MarkdownNote",
    "pos": [
     800,
@@ -3431,7 +3575,7 @@
     360
    ],
    "flags": {},
-   "order": 43,
+   "order": 44,
    "mode": 0,
    "inputs": [],
    "outputs": [],
@@ -3803,7 +3947,7 @@
    45,
    28,
    2,
-   34,
+   35,
    0,
    "LATENT"
   ],
@@ -3811,7 +3955,7 @@
    46,
    14,
    0,
-   34,
+   35,
    1,
    "VAE"
   ],
@@ -3889,7 +4033,7 @@
   ],
   [
    56,
-   34,
+   35,
    0,
    33,
    1,
@@ -3897,71 +4041,71 @@
   ],
   [
    57,
-   32,
+   30,
    0,
    33,
    2,
-   "MASK"
+   "IMAGE"
   ],
   [
    58,
    33,
    0,
-   35,
+   34,
    0,
    "IMAGE"
   ],
   [
    59,
-   8,
-   0,
    35,
+   0,
+   34,
    1,
-   "LTXE_HDR_PLAN"
+   "IMAGE"
   ],
   [
    60,
-   9,
+   32,
    0,
-   35,
-   3,
-   "INT"
+   34,
+   2,
+   "MASK"
   ],
   [
    61,
-   4,
-   1,
-   35,
-   2,
-   "STRING"
-  ],
-  [
-   62,
-   33,
+   34,
    0,
    36,
    0,
    "IMAGE"
   ],
   [
-   63,
-   10,
-   1,
+   62,
+   8,
+   0,
    36,
    1,
+   "LTXE_HDR_PLAN"
+  ],
+  [
+   63,
+   9,
+   0,
+   36,
+   3,
    "INT"
   ],
   [
    64,
-   10,
-   2,
+   4,
+   1,
    36,
    2,
-   "INT"
+   "STRING"
   ],
   [
    65,
-   36,
+   34,
    0,
    37,
    0,
@@ -3969,6 +4113,22 @@
   ],
   [
    66,
+   10,
+   1,
+   37,
+   1,
+   "INT"
+  ],
+  [
+   67,
+   10,
+   2,
+   37,
+   2,
+   "INT"
+  ],
+  [
+   68,
    37,
    0,
    38,
@@ -3976,50 +4136,58 @@
    "IMAGE"
   ],
   [
-   67,
-   8,
-   3,
-   38,
-   2,
-   "FLOAT"
-  ],
-  [
-   68,
+   69,
    38,
    0,
    39,
-   0,
-   "VIDEO"
-  ],
-  [
-   69,
-   36,
-   0,
-   40,
    0,
    "IMAGE"
   ],
   [
    70,
+   8,
+   3,
+   39,
+   2,
+   "FLOAT"
+  ],
+  [
+   71,
+   39,
+   0,
    40,
+   0,
+   "VIDEO"
+  ],
+  [
+   72,
+   37,
    0,
    41,
    0,
    "IMAGE"
   ],
   [
-   71,
+   73,
+   41,
+   0,
+   42,
+   0,
+   "IMAGE"
+  ],
+  [
+   74,
    8,
    3,
-   41,
+   42,
    2,
    "FLOAT"
   ],
   [
-   72,
-   41,
-   0,
+   75,
    42,
+   0,
+   43,
    0,
    "VIDEO"
   ]
@@ -4104,7 +4272,7 @@
     2300,
     940,
     522.4253906250001,
-    890
+    1250
    ],
    "color": "#3a7a6a",
    "flags": {}

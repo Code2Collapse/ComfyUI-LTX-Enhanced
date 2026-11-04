@@ -25,7 +25,7 @@ The planning and tiling nodes are under **🐺 C2C / 🎥 LTX Enhanced** in the 
 
 ### SDR → HDR helpers (new 2026-11-04)
 
-These nine are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare, plan and deliver an SDR clip around the
+These ten are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare, plan and deliver an SDR clip around the
 official LTX-2.5 SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They do not run the model themselves. The design is in
 [docs/HDR_ARCHITECTURE.md](docs/HDR_ARCHITECTURE.md).
 
@@ -38,13 +38,14 @@ official LTX-2.5 SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They 
 | **LTXE HDR 8-bit Cleanup** | Removes 8-bit banding before the model: fills in the values between code steps while every pixel stays within half a code of the source, so re-quantising gives back exactly the source (checked on each run). Only 8-bit sources are changed. Measured on synthetic ramps: the error to the true gradient drops from 0.29 to 0.02 codes. | experimental |
 | **LTXE HDR Highlight Analyzer** | Finds clipped highlights in the SDR source (a channel at the code ceiling; a bright but unclipped area is not counted) and a soft near-white map, with grow, feather, temporal smoothing and a user mask. | experimental |
 | **LTXE HDR Synth Mask** | Decides where the generated HDR is used: the clip mask (optionally the near-white map), grown, feathered, smoothed over time, plus your own mask, with a red preview and coverage / flicker numbers. The model still sees the whole frame. | experimental |
+| **LTXE HDR Shadow Recovery** | Optional, off by default: where the source is crushed to black, uses the generated shadow detail at the source's local exposure (measured from the just-above-black pixels around it). Outside those areas the result is exactly the source; inside it never goes below the source. | experimental |
 | **LTXE HDR Source-Preservation Composite** | Keeps the source outside the synth mask and takes the generated HDR inside it, in linear ACEScg: where the mask is 0 the result is exactly the source in that space. An optional per-channel gain matches the generation to the source exposure; the source is never changed. | experimental |
 | **LTXE HDR Delivery** | Writes the delivered frames of one decoded window as scene-linear ACEScg EXRs (half float, ZIP, no clamping), named after the source frames (`shot_hdr_1001.exr` ...), so the windows of a shot fill one sequence. Adds a JSON sidecar per window. Files stay inside ComfyUI's output folder. | experimental |
 
 **Status:**
 - Tested on CPU, and run in ComfyUI's real executor (core 0.39.0).
 - The HDR model run itself (LTX-2.5 22B on a GPU) has **not** been benchmarked by this pack.
-- `LTXE_DISABLE_HDR=1` removes just these nine nodes.
+- `LTXE_DISABLE_HDR=1` removes just these ten nodes.
 
 **Workflow** `workflows/2.5/hdr/LTXE_SDR_to_HDR_Pro.json`: SDR video in, ACEScg EXR frames out, one window per
 run, plus an HLG clip and a tonemapped preview per window. Only the clipped highlights come from the generation;

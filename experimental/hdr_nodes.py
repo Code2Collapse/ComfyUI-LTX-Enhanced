@@ -12,7 +12,7 @@ import os
 
 import torch
 
-from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, source_audit
+from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, shadows, source_audit
 
 CATEGORY = "LTX Enhanced/HDR"
 PLAN_TYPE = "LTXE_HDR_PLAN"
@@ -421,6 +421,44 @@ class LTXEHDR8bitCleanup:
         return {"ui": {"text": [text]}, "result": (out, images, json.dumps(rep, indent=1))}
 
 
+class LTXEHDRShadowRecovery:
+    DESCRIPTION = ("Optional (off by default): where the SDR source is crushed to black, uses the generated shadow "
+                   "detail brought to the source's local exposure (measured from the just-above-black source pixels "
+                   "around it). Outside the crushed areas the result is exactly the source; inside it never goes below "
+                   "the source. Feed its output to the Source-Preservation Composite as the source. " + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("IMAGE", "MASK", "STRING")
+    RETURN_NAMES = ("recovered", "shadow_mask", "report")
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = shadows.ShadowSettings()
+        return {"required": {
+            "source": ("IMAGE", {"tooltip": "The source window as the model saw it (ACEScct)."}),
+            "generated": ("IMAGE", {"tooltip": "The decoded window (VAE Decode output)."}),
+            "display": ("IMAGE", {"tooltip": "The SDR source window (display values), to find the crushed areas."}),
+            "enabled": ("BOOLEAN", {"default": d.enabled, "tooltip": "Off = the source passes through unchanged."}),
+            "black_threshold": ("FLOAT", {"default": d.black_threshold, "min": 0.0, "max": 0.2, "step": 0.001,
+                                          "tooltip": "Display luma at or below this counts as crushed."}),
+            "strength": ("FLOAT", {"default": d.strength, "min": 0.0, "max": 1.0, "step": 0.05,
+                                   "tooltip": "How much of the recovered detail is used."}),
+            "transition_px": ("INT", {"default": d.transition_px, "min": 0, "max": 128,
+                                      "tooltip": "Soft edge of the crushed areas, in pixels."}),
+            "local_radius": ("INT", {"default": d.local_radius, "min": 1, "max": 512, "tooltip": (
+                "How far around a crushed area the local exposure is measured, in pixels.")}),
+            "source_transfer": (masks.TRANSFERS, {"default": "acescct", "tooltip": "Encoding of the source input."}),
+            "generated_transfer": (masks.TRANSFERS, {"default": "acescct",
+                                                     "tooltip": "Encoding of the generated input."}),
+        }}
+
+    def run(self, source, generated, display, enabled, black_threshold, strength, transition_px, local_radius,
+            source_transfer, generated_transfer):
+        st = shadows.ShadowSettings(enabled, black_threshold, strength, transition_px, local_radius)
+        out, m, rep = shadows.recover(source, generated, display, st, source_transfer, generated_transfer)
+        return (out, m, json.dumps(rep, indent=1))
+
+
 NODE_CLASS_MAPPINGS = {
     "LTXE_HDRSourceAudit": LTXEHDRSourceAudit,
     "LTXE_HDRInputColor": LTXEHDRInputColor,
@@ -431,6 +469,7 @@ NODE_CLASS_MAPPINGS = {
     "LTXE_HDRSynthMask": LTXEHDRSynthMask,
     "LTXE_HDRPreservationComposite": LTXEHDRPreservationComposite,
     "LTXE_HDR8bitCleanup": LTXEHDR8bitCleanup,
+    "LTXE_HDRShadowRecovery": LTXEHDRShadowRecovery,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRSourceAudit": "LTXE HDR Source Audit (experimental)",
@@ -442,4 +481,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRSynthMask": "LTXE HDR Synth Mask (experimental)",
     "LTXE_HDRPreservationComposite": "LTXE HDR Source-Preservation Composite (experimental)",
     "LTXE_HDR8bitCleanup": "LTXE HDR 8-bit Cleanup (experimental)",
+    "LTXE_HDRShadowRecovery": "LTXE HDR Shadow Recovery (experimental)",
 }
