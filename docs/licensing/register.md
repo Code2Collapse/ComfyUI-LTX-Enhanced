@@ -38,6 +38,10 @@ Each repository's rule is in the "Reuse" column of [the ecosystem registry](../r
 | numpy 2.4.6 | Run-time dependency, already in ComfyUI | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 (package metadata) | Allowed |
 | pytest 9.1.1 | Tests only | MIT | Allowed |
 | SageAttention (optional, later) | Optional run-time backend if installed. Never bundled. | Apache-2.0 | Allowed |
+| ComfyUI core `ImageColorSpace` (HDR helper "LTXE HDR Input Color") | Called at run time for sRGB / linear -> ACEScct, imported inside `run()` only. | GPL-3.0 | Allowed (same basis as the core row above); its code is not copied - our ACEScg curve is written from the ACES definitions and checked against it numerically. |
+| ACES S-2016-001 (ACEScct), CIE xy of Rec.709 / AP1 / ACES white, Bradford adaptation | Implemented from the published definitions in `ltx_enhanced/hdr/colorspace.py`. | Published specifications (no code) | Allowed |
+| divnogorsky/hdr-converter 0.2.0-beta (owner A23 feature reference) | Feature list only. No installer, binary, asset or code is read, extracted, bundled or invoked. | Proprietary EULA | Reference only. A separately published open-source ComfyUI package by the author would need its own licence check before any reuse. |
+| Lightricks/ComfyUI-LTXVideo `220e1d4` HDR example workflows | Read for behaviour (node names, settings) to write `docs/HDR_ARCHITECTURE.md` and our example workflows that wire the user's own install. | LTX-2 Community License | Behaviour notes only (D-1); no workflow file is copied. |
 
 The dependency licences were read from the package metadata in the owner-stack Python (`importlib.metadata`) on 2026-10-14.
 
@@ -70,3 +74,5 @@ The dependency licences were read from the package metadata in the owner-stack P
 ## Change log
 
 - 2026-10-14: first version (ledger L7.105).
+- 2026-11-04: SDR -> HDR helpers (owner A23, ledger L9.127-L9.130): core ImageColorSpace, ACES definitions, the
+  hdr-converter reference and the upstream HDR workflows recorded above.

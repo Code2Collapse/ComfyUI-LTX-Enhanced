@@ -13,7 +13,7 @@ Each method is measured against the existing ones before it is recommended.
 
 ## Nodes
 
-All five are under **🐺 C2C / 🎥 LTX Enhanced** in the Add Node menu.
+The planning and tiling nodes are under **🐺 C2C / 🎥 LTX Enhanced** in the Add Node menu.
 
 | Node | What it does | Label |
 |---|---|---|
@@ -22,6 +22,24 @@ All five are under **🐺 C2C / 🎥 LTX Enhanced** in the Add Node menu.
 | **LTXE Crop Back** | Uses the plan to remove exactly the padding: the extra frames at the end and the border. Works after a 2× upscale too. | experimental |
 | **LTXE Tiled Model** | Makes every model call run tile by tile, and blends the tiles' predictions with trapezoid weights. Your sampler, noise and schedule are unchanged, so any sampler works, ancestral and multi-step ones included. In an LTX-2 audio-video latent, the audio is shared by all tiles. Full-size IC-LoRA guides are cut with the tiles. | experimental |
 | **LTXE Sigma Check** | Passes a schedule through, and stops the run with a plain-English message when it is NaN, rising, flat or saturated | experimental |
+
+### SDR → HDR helpers (new 2026-11-04)
+
+These four are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare and plan an SDR clip for the official LTX-2.5
+SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They do not run the model themselves. The design is in
+[docs/HDR_ARCHITECTURE.md](docs/HDR_ARCHITECTURE.md).
+
+| Node | What it does | Label |
+|---|---|---|
+| **LTXE HDR Source Audit** | Checks the clip before any model loads: size, frame rate, bit depth (estimated from the values), clipped highlights, near-white areas, crushed shadows, duplicate frames, likely cuts, softness and an upscale hint. Material that is already HDR is sent to the Native HDR path. | experimental |
+| **LTXE HDR Input Color** | Converts the source into ACEScct before resizing, as the official graph does. Ordinary video and linear Rec.709 go through core's Convert Image Color Space; ACEScg uses this pack's ACEScct curve, because core has no ACEScg input. The untouched source is passed on. | experimental |
+| **LTXE HDR Chunk Planner** | Plans overlapping 8k+1-frame windows that deliver every frame exactly once. It pads the last window, conditions at min(source, 30) fps while keeping the source rate and frame numbers, and estimates tokens. | experimental |
+| **LTXE HDR Take Segment** | Cuts one planned window, padded to 8k+1, and reports which of its frames are delivered. | experimental |
+
+**Status:**
+- Tested on CPU, and run in ComfyUI's real executor (core 0.39.0).
+- The HDR model run itself (LTX-2.5 22B on a GPU) has **not** been benchmarked by this pack.
+- `LTXE_DISABLE_HDR=1` removes just these four nodes.
 
 ### Why padding matters
 

@@ -24,6 +24,16 @@ elif os.environ.get("LTXE_DISABLE", "").strip() in ("", "0"):
         NODE_DISPLAY_NAME_MAPPINGS.update(_EXP_NAMES)
     except Exception as exc:  # noqa: BLE001
         _LOG.error("ComfyUI-LTX-Enhanced: nodes not loaded: %s", exc)
+    # A23 SDR -> HDR helpers: their own kill switch, and their own guard (a failure costs only these nodes)
+    if os.environ.get("LTXE_DISABLE_HDR", "").strip() in ("", "0"):
+        try:
+            from .experimental.hdr_nodes import (NODE_CLASS_MAPPINGS as _HDR,
+                                                 NODE_DISPLAY_NAME_MAPPINGS as _HDR_NAMES)
+
+            NODE_CLASS_MAPPINGS.update(_HDR)
+            NODE_DISPLAY_NAME_MAPPINGS.update(_HDR_NAMES)
+        except Exception as exc:  # noqa: BLE001
+            _LOG.error("ComfyUI-LTX-Enhanced: HDR nodes not loaded: %s", exc)
 else:
     _LOG.info("ComfyUI-LTX-Enhanced: LTXE_DISABLE is set; no nodes registered")
 
