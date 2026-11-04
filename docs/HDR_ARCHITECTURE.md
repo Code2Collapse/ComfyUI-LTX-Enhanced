@@ -80,4 +80,5 @@ budgets come from P5 GPU benchmarks.
 |---|---|
 | Upstream facts (section 1) | verified by reading source + workflows (no GPU run) |
 | Source audit, input colour, chunk planner | P1, this slice |
+| Delivery (ACEScg EXR, source frame numbers, sidecar) + `LTXE_SDR_to_HDR_Pro.json` | P1 (L9.131): CPU tests, executor run, workflow load-validated |
 | Model run on real weights | NOT RUN (needs LTX-2.5 22B on a GPU) |

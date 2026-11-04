@@ -25,8 +25,8 @@ The planning and tiling nodes are under **🐺 C2C / 🎥 LTX Enhanced** in the 
 
 ### SDR → HDR helpers (new 2026-11-04)
 
-These four are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare and plan an SDR clip for the official LTX-2.5
-SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They do not run the model themselves. The design is in
+These five are under **🐺 C2C / 🎥 LTX Enhanced / HDR**. They prepare, plan and deliver an SDR clip around the
+official LTX-2.5 SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They do not run the model themselves. The design is in
 [docs/HDR_ARCHITECTURE.md](docs/HDR_ARCHITECTURE.md).
 
 | Node | What it does | Label |
@@ -35,11 +35,18 @@ SDR-to-HDR IC-LoRA graph (ComfyUI-LTXVideo + core nodes). They do not run the mo
 | **LTXE HDR Input Color** | Converts the source into ACEScct before resizing, as the official graph does. Ordinary video and linear Rec.709 go through core's Convert Image Color Space; ACEScg uses this pack's ACEScct curve, because core has no ACEScg input. The untouched source is passed on. | experimental |
 | **LTXE HDR Chunk Planner** | Plans overlapping 8k+1-frame windows that deliver every frame exactly once. It pads the last window, conditions at min(source, 30) fps while keeping the source rate and frame numbers, and estimates tokens. | experimental |
 | **LTXE HDR Take Segment** | Cuts one planned window, padded to 8k+1, and reports which of its frames are delivered. | experimental |
+| **LTXE HDR Delivery** | Writes the delivered frames of one decoded window as scene-linear ACEScg EXRs (half float, ZIP, no clamping), named after the source frames (`shot_hdr_1001.exr` ...), so the windows of a shot fill one sequence. Adds a JSON sidecar per window. Files stay inside ComfyUI's output folder. | experimental |
 
 **Status:**
 - Tested on CPU, and run in ComfyUI's real executor (core 0.39.0).
 - The HDR model run itself (LTX-2.5 22B on a GPU) has **not** been benchmarked by this pack.
-- `LTXE_DISABLE_HDR=1` removes just these four nodes.
+- `LTXE_DISABLE_HDR=1` removes just these five nodes.
+
+**Workflow** `workflows/2.5/hdr/LTXE_SDR_to_HDR_Pro.json`: SDR video in, ACEScg EXR frames out, one window per
+run, plus an HLG clip and a tonemapped preview per window. It needs ComfyUI-LTXVideo and the official LTX-2.5
+SDR-to-HDR files. It was built and checked in ComfyUI 0.39 / frontend 1.53.10 (it loads in both renderers; the
+server reports only the model and video files that were absent there); the model itself was not run. Seams between
+windows are still hard cuts, and audio is not muxed yet.
 
 ### Why padding matters
 
