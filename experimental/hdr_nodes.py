@@ -12,7 +12,7 @@ import os
 
 import torch
 
-from ..ltx_enhanced.hdr import chunk_plan, colorspace, exr_writer, masks, source_audit
+from ..ltx_enhanced.hdr import chunk_plan, cleanup, colorspace, exr_writer, masks, source_audit
 
 CATEGORY = "LTX Enhanced/HDR"
 PLAN_TYPE = "LTXE_HDR_PLAN"
@@ -373,6 +373,54 @@ class LTXEHDRPreservationComposite:
         return {"ui": {"text": [text]}, "result": (out.contiguous(), m, sp, gp, masks.report_json(rep))}
 
 
+class LTXEHDR8bitCleanup:
+    DESCRIPTION = ("Removes 8-bit banding before HDR reconstruction: fills in the values between code steps while every "
+                   "pixel stays within half a code of the source, so re-quantising gives back exactly the source codes "
+                   "(checked on every run and shown in the report). Only 8-bit sources are changed; 10-bit, float and "
+                   "unknown sources pass through untouched. Feed the guide path; keep the original for the masks. "
+                   + LABEL)
+    CATEGORY = CATEGORY
+    FUNCTION = "run"
+    RETURN_TYPES = ("IMAGE", "IMAGE", "STRING")
+    RETURN_NAMES = ("prepared", "original", "report")
+    OUTPUT_NODE = True
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        d = cleanup.CleanupSettings()
+        return {"required": {
+            "images": ("IMAGE", {"tooltip": "The SDR source frames (display values 0-1)."}),
+            "enabled": ("BOOLEAN", {"default": d.enabled, "tooltip": "Off = pass the frames through."}),
+            "strength": ("FLOAT", {"default": d.strength, "min": 0.0, "max": 1.0, "step": 0.05,
+                                   "tooltip": "1 = the full cleanup; lower blends back towards the source."}),
+            "radius": ("INT", {"default": d.radius, "min": 1, "max": 64, "tooltip": (
+                "Smoothing radius in pixels. Wide banding steps need a larger radius; no pixel moves more than half "
+                "a code whatever the radius.")}),
+            "iterations": ("INT", {"default": d.iterations, "min": 1, "max": 32,
+                                   "tooltip": "Smooth-and-clamp passes."}),
+            "shadow_sensitivity": ("FLOAT", {"default": d.shadow_sensitivity, "min": 0.0, "max": 1.0, "step": 0.05,
+                                             "tooltip": "Extra smoothing in the shadows, where banding shows most."}),
+            "tolerance": ("FLOAT", {"default": d.tolerance, "min": 0.1, "max": 0.99, "step": 0.01, "tooltip": (
+                "How far a pixel may move, as a fraction of half a code (below 1 so rounding cannot flip a code).")}),
+        }, "optional": {
+            "bit_depth": ("STRING", {"forceInput": True, "tooltip": (
+                "From LTXE HDR Source Audit bit_depth. Not connected: the node checks whether the values sit on the "
+                "8-bit grid.")}),
+        }}
+
+    def run(self, images, enabled, strength, radius, iterations, shadow_sensitivity, tolerance, bit_depth=None):
+        if bit_depth is None or not str(bit_depth).strip():
+            bit_depth = "8" if cleanup.on_8bit_grid(images) else "unknown"
+        st = cleanup.CleanupSettings(enabled, strength, radius, iterations, shadow_sensitivity, tolerance)
+        out, rep = cleanup.cleanup(images, bit_depth, st)
+        if rep.get("applied"):
+            text = (f"cleaned {rep['frames']} frames; re-quantises to the source: {rep['requantizes_to_source']}; "
+                    f"largest shift {rep['max_shift_codes']} code.")
+        else:
+            text = f"unchanged: {rep.get('reason')}"
+        return {"ui": {"text": [text]}, "result": (out, images, json.dumps(rep, indent=1))}
+
+
 NODE_CLASS_MAPPINGS = {
     "LTXE_HDRSourceAudit": LTXEHDRSourceAudit,
     "LTXE_HDRInputColor": LTXEHDRInputColor,
@@ -382,6 +430,7 @@ NODE_CLASS_MAPPINGS = {
     "LTXE_HDRHighlightAnalyzer": LTXEHDRHighlightAnalyzer,
     "LTXE_HDRSynthMask": LTXEHDRSynthMask,
     "LTXE_HDRPreservationComposite": LTXEHDRPreservationComposite,
+    "LTXE_HDR8bitCleanup": LTXEHDR8bitCleanup,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRSourceAudit": "LTXE HDR Source Audit (experimental)",
@@ -392,4 +441,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LTXE_HDRHighlightAnalyzer": "LTXE HDR Highlight Analyzer (experimental)",
     "LTXE_HDRSynthMask": "LTXE HDR Synth Mask (experimental)",
     "LTXE_HDRPreservationComposite": "LTXE HDR Source-Preservation Composite (experimental)",
+    "LTXE_HDR8bitCleanup": "LTXE HDR 8-bit Cleanup (experimental)",
 }
