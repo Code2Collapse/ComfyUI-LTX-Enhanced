@@ -56,6 +56,11 @@ SDR-to-HDR files. It was built and checked in ComfyUI 0.39 / frontend 1.53.10 (i
 server reports only the model and video files that were absent there); the model itself was not run. Seams between
 windows are matched in exposure but not cross-faded, and audio is not muxed yet.
 
+`workflows/2.5/hdr/LTXE_SDR_to_HDR_Pro_Subgraphs.json` is the same graph with its stages packaged as editable
+native subgraphs (guide and latents, sampling, decode and EXR, source preservation, seam match, HLG and preview):
+source, plan and models stay outside where you set them. Its run is identical (the API prompt was checked equal to
+the flat graph's), and it loads in both renderers on ComfyUI 0.39 / frontend 1.53.10.
+
 **Workflow** `workflows/2.5/hdr/LTXE_HDR_Review_and_QC.json`: run it on the delivered folder when every window
 is done. It was run for real in ComfyUI 0.39: a complete two-window shot is accepted; with one frame deleted it
 holds and names the frame.
