@@ -8,6 +8,7 @@ ComfyUI is imported only inside run() so the pack still loads without it. Kill s
 from __future__ import annotations
 
 import json
+from fractions import Fraction
 import os
 
 import torch
@@ -146,8 +147,10 @@ class LTXEHDRTakeSegment:
                    + LABEL)
     CATEGORY = CATEGORY
     FUNCTION = "run"
-    RETURN_TYPES = ("IMAGE", "INT", "INT", "INT")
-    RETURN_NAMES = ("window", "keep_offset", "keep_count", "frames")
+    # A23 L9.133, appended (existing links keep their slots): the delivered range in seconds, to trim the source
+    # audio for the HLG / preview clip of this window (core Trim Audio Duration)
+    RETURN_TYPES = ("IMAGE", "INT", "INT", "INT", "FLOAT", "FLOAT")
+    RETURN_NAMES = ("window", "keep_offset", "keep_count", "frames", "keep_start_seconds", "keep_seconds")
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -168,7 +171,9 @@ class LTXEHDRTakeSegment:
         win = images[s.gen_start:s.gen_end]
         if s.pad_tail:
             win = torch.cat([win, images[s.gen_end - 1:s.gen_end].expand(s.pad_tail, *images.shape[1:])], dim=0)
-        return (win.contiguous(), s.keep_start - s.gen_start, s.keep_end - s.keep_start, s.gen_frames)
+        fps = float(Fraction(p.source_fps))
+        return (win.contiguous(), s.keep_start - s.gen_start, s.keep_end - s.keep_start, s.gen_frames,
+                s.keep_start / fps, (s.keep_end - s.keep_start) / fps)
 
 
 class LTXEHDRDelivery:

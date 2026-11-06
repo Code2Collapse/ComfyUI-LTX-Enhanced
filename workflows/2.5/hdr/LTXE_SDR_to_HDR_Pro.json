@@ -1,8 +1,8 @@
 {
- "id": "011471e8-650f-47b6-8d96-4d246b02108a",
+ "id": "67039d2a-8fd9-4f29-b2bb-900bea18be31",
  "revision": 0,
- "last_node_id": 48,
- "last_link_id": 82,
+ "last_node_id": 49,
+ "last_link_id": 87,
  "nodes": [
   {
    "id": 1,
@@ -97,7 +97,9 @@
      "localized_name": "audio",
      "name": "audio",
      "type": "AUDIO",
-     "links": null
+     "links": [
+      79
+     ]
     },
     {
      "localized_name": "fps",
@@ -679,7 +681,7 @@
      "type": "FLOAT",
      "links": [
       77,
-      81
+      86
      ]
     },
     {
@@ -771,7 +773,7 @@
    ],
    "size": [
     364.8267578125,
-    118
+    158
    ],
    "flags": {},
    "order": 9,
@@ -832,6 +834,22 @@
      "links": [
       21,
       28
+     ]
+    },
+    {
+     "localized_name": "keep_start_seconds",
+     "name": "keep_start_seconds",
+     "type": "FLOAT",
+     "links": [
+      80
+     ]
+    },
+    {
+     "localized_name": "keep_seconds",
+     "name": "keep_seconds",
+     "type": "FLOAT",
+     "links": [
+      81
      ]
     }
    ],
@@ -2049,7 +2067,7 @@
    ],
    "size": [
     364.8267578125,
-    118
+    158
    ],
    "flags": {},
    "order": 29,
@@ -2104,6 +2122,18 @@
      "localized_name": "frames",
      "name": "frames",
      "type": "INT",
+     "links": null
+    },
+    {
+     "localized_name": "keep_start_seconds",
+     "name": "keep_start_seconds",
+     "type": "FLOAT",
+     "links": null
+    },
+    {
+     "localized_name": "keep_seconds",
+     "name": "keep_seconds",
+     "type": "FLOAT",
      "links": null
     }
    ],
@@ -3221,7 +3251,7 @@
      "type": "IMAGE",
      "links": [
       75,
-      79
+      84
      ]
     }
    ],
@@ -3327,7 +3357,7 @@
      "name": "audio",
      "shape": 7,
      "type": "AUDIO",
-     "link": null
+     "link": 82
     },
     {
      "localized_name": "fps",
@@ -3496,7 +3526,7 @@
      "localized_name": "image",
      "name": "image",
      "type": "IMAGE",
-     "link": 79
+     "link": 84
     },
     {
      "localized_name": "transfer",
@@ -3575,7 +3605,7 @@
      "name": "tonemapped",
      "type": "IMAGE",
      "links": [
-      80
+      85
      ]
     },
     {
@@ -3627,14 +3657,14 @@
      "localized_name": "images",
      "name": "images",
      "type": "IMAGE",
-     "link": 80
+     "link": 85
     },
     {
      "localized_name": "audio",
      "name": "audio",
      "shape": 7,
      "type": "AUDIO",
-     "link": null
+     "link": 83
     },
     {
      "localized_name": "fps",
@@ -3643,7 +3673,7 @@
      "widget": {
       "name": "fps"
      },
-     "link": 81
+     "link": 86
     },
     {
      "localized_name": "bit_depth",
@@ -3682,7 +3712,7 @@
      "name": "VIDEO",
      "type": "VIDEO",
      "links": [
-      82
+      87
      ]
     }
    ],
@@ -3705,6 +3735,70 @@
   },
   {
    "id": 46,
+   "type": "TrimAudioDuration",
+   "pos": [
+    2700,
+    880
+   ],
+   "size": [
+    270,
+    82
+   ],
+   "flags": {},
+   "order": 45,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "audio",
+     "name": "audio",
+     "type": "AUDIO",
+     "link": 79
+    },
+    {
+     "localized_name": "start_index",
+     "name": "start_index",
+     "type": "FLOAT",
+     "widget": {
+      "name": "start_index"
+     },
+     "link": 80
+    },
+    {
+     "localized_name": "duration",
+     "name": "duration",
+     "type": "FLOAT",
+     "widget": {
+      "name": "duration"
+     },
+     "link": 81
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "AUDIO",
+     "name": "AUDIO",
+     "type": "AUDIO",
+     "links": [
+      82,
+      83
+     ]
+    }
+   ],
+   "title": "Window sound (delivered frames)",
+   "properties": {
+    "Node name for S&R": "TrimAudioDuration"
+   },
+   "widgets_values": [
+    0,
+    60
+   ],
+   "widgets_values_named": {
+    "start_index": 0,
+    "duration": 60
+   }
+  },
+  {
+   "id": 47,
    "type": "SaveVideo",
    "pos": [
     3080,
@@ -3715,14 +3809,14 @@
     106
    ],
    "flags": {},
-   "order": 45,
+   "order": 46,
    "mode": 0,
    "inputs": [
     {
      "localized_name": "video",
      "name": "video",
      "type": "VIDEO",
-     "link": 82
+     "link": 87
     },
     {
      "localized_name": "filename_prefix",
@@ -3785,7 +3879,7 @@
    }
   },
   {
-   "id": 47,
+   "id": 48,
    "type": "MarkdownNote",
    "pos": [
     40,
@@ -3796,22 +3890,22 @@
     640
    ],
    "flags": {},
-   "order": 46,
+   "order": 47,
    "mode": 0,
    "inputs": [],
    "outputs": [],
    "properties": {},
    "widgets_values": [
-    "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- **Seams** (group 7b): run the windows in order. Each window's exposure is matched to the window before it on\n  the frames they share, and the correction fades out over `seam_width` frames. There is no cross-fade yet.\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- **Shadow recovery** (group 6b) is off by default: turn it on to use generated detail where the source is crushed\n  to black, at the source's local exposure.\n- When every window is done, check the shot with *LTXE_HDR_Review_and_QC* (same shot name and folder).\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
+    "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- **Seams** (group 7b): run the windows in order. Each window's exposure is matched to the window before it on\n  the frames they share, and the correction fades out over `seam_width` frames. There is no cross-fade yet.\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- **Shadow recovery** (group 6b) is off by default: turn it on to use generated detail where the source is crushed\n  to black, at the source's local exposure.\n- When every window is done, check the shot with *LTXE_HDR_Review_and_QC* (same shot name and folder).\n- The preview and HLG clips are per window and carry the source sound of the delivered frames (Trim Audio\n  Duration from the window's keep_start_seconds / keep_seconds).\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
    ],
    "widgets_values_named": {
-    "text": "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- **Seams** (group 7b): run the windows in order. Each window's exposure is matched to the window before it on\n  the frames they share, and the correction fades out over `seam_width` frames. There is no cross-fade yet.\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- **Shadow recovery** (group 6b) is off by default: turn it on to use generated detail where the source is crushed\n  to black, at the source's local exposure.\n- When every window is done, check the shot with *LTXE_HDR_Review_and_QC* (same shot name and folder).\n- Audio is not muxed into the HLG clips; the preview and HLG clips are per window.\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
+    "text": "# LTXE SDR -> HDR Pro (experimental)\n\nSDR video in, scene-linear **ACEScg EXR** frames out, one planned window per run, plus an HLG clip and a tonemapped\npreview per window. The model stages are the official **LTX-2.5 SDR-to-HDR IC-LoRA** nodes (ComfyUI-LTXVideo);\nLTX-Enhanced adds the audit, colour, planning and delivery around them.\n\n**Before you run**\n1. Install **ComfyUI-LTXVideo** (Lightricks) and its requirements (colour-science, OpenImageIO).\n2. Put the LTX-2.5 files where the loaders look (names are the official ones; download links: the ComfyUI-LTXVideo\n   README and its HDR example workflow). The LTX-2 licence terms apply to the weights.\n3. Load an **SDR** clip in *Load Video*. Already-HDR or EXR sources belong in *LTXE_HDR_Native_EXR*.\n\n**How to run a long clip**\n- Run once with `window` = 0. *Chunk Planner* shows how many windows the clip needs.\n- Raise `window` by 1 and run again until every window is done. EXR frames are numbered by source frame\n  (1001 onwards), so the windows fill one sequence: `output/ltxe_hdr/hdr/shot_hdr_1001.exr ...`.\n\n**Source preservation** (group 6b): the model sees the whole frame; afterwards only the clipped highlights (grown and\nfeathered) come from the generation, and everything else is the source exactly as the model received it. Turn\n`synth_mix` to 0 to get the source back, to 1 for the full highlight reconstruction.\n\n**What this version does not do yet** (A23 P2/P3)\n- **Seams** (group 7b): run the windows in order. Each window's exposure is matched to the window before it on\n  the frames they share, and the correction fades out over `seam_width` frames. There is no cross-fade yet.\n- **8-bit cleanup** (group 1) removes banding from 8-bit sources before the model (every pixel stays within half a\n  code of the source); 10-bit and float sources pass through. The masks read the original source.\n- **Shadow recovery** (group 6b) is off by default: turn it on to use generated detail where the source is crushed\n  to black, at the source's local exposure.\n- When every window is done, check the shot with *LTXE_HDR_Review_and_QC* (same shot name and folder).\n- The preview and HLG clips are per window and carry the source sound of the delivered frames (Trim Audio\n  Duration from the window's keep_start_seconds / keep_seconds).\n\n**Status:** experimental. The graph loads and validates on ComfyUI 0.39 / frontend 1.53.10; the HDR model has not\nbeen run by this pack (needs the 22B model on a GPU)."
    },
    "color": "#432",
    "bgcolor": "#653"
   },
   {
-   "id": 48,
+   "id": 49,
    "type": "MarkdownNote",
    "pos": [
     800,
@@ -3822,7 +3916,7 @@
     360
    ],
    "flags": {},
-   "order": 47,
+   "order": 48,
    "mode": 0,
    "inputs": [],
    "outputs": [],
@@ -4464,6 +4558,46 @@
   ],
   [
    79,
+   2,
+   1,
+   46,
+   0,
+   "AUDIO"
+  ],
+  [
+   80,
+   10,
+   4,
+   46,
+   1,
+   "FLOAT"
+  ],
+  [
+   81,
+   10,
+   5,
+   46,
+   2,
+   "FLOAT"
+  ],
+  [
+   82,
+   46,
+   0,
+   42,
+   1,
+   "AUDIO"
+  ],
+  [
+   83,
+   46,
+   0,
+   45,
+   1,
+   "AUDIO"
+  ],
+  [
+   84,
    40,
    0,
    44,
@@ -4471,7 +4605,7 @@
    "IMAGE"
   ],
   [
-   80,
+   85,
    44,
    0,
    45,
@@ -4479,7 +4613,7 @@
    "IMAGE"
   ],
   [
-   81,
+   86,
    8,
    3,
    45,
@@ -4487,10 +4621,10 @@
    "FLOAT"
   ],
   [
-   82,
+   87,
    45,
    0,
-   46,
+   47,
    0,
    "VIDEO"
   ]
@@ -4587,7 +4721,7 @@
     2680,
     60,
     765.7886718750001,
-    746
+    922
    ],
    "color": "#444",
    "flags": {}

@@ -54,7 +54,9 @@ run, plus an HLG clip and a tonemapped preview per window. Only the clipped high
 the rest of the frame is the source. It needs ComfyUI-LTXVideo and the official LTX-2.5
 SDR-to-HDR files. It was built and checked in ComfyUI 0.39 / frontend 1.53.10 (it loads in both renderers; the
 server reports only the model and video files that were absent there); the model itself was not run. Seams between
-windows are matched in exposure but not cross-faded, and audio is not muxed yet.
+windows are matched in exposure but not cross-faded. The HLG clip and the preview of each window carry the source
+sound of the delivered frames (fixed 2026-11-06; Take Segment's new `keep_start_seconds` / `keep_seconds`
+outputs drive core Trim Audio Duration).
 
 `workflows/2.5/hdr/LTXE_SDR_to_HDR_Pro_Subgraphs.json` is the same graph with its stages packaged as editable
 native subgraphs (guide and latents, sampling, decode and EXR, source preservation, seam match, HLG and preview):
