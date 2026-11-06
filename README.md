@@ -60,6 +60,12 @@ windows are matched in exposure but not cross-faded, and audio is not muxed yet.
 is done. It was run for real in ComfyUI 0.39: a complete two-window shot is accepted; with one frame deleted it
 holds and names the frame.
 
+**Workflow** `workflows/2.5/hdr/LTXE_HDR_Native_EXR.json` (experimental): an EXR plate that is already HDR, refined
+by the official LTX-2.5 general-refine IC-LoRA (tiled fusion, float32 VAE) and written as ACEScg EXR frames by
+source frame, one window per run. It is not the SDR-to-HDR conversion, and the prompt is encoded locally (the
+official graph's paid Gemma API node is not used). Built and checked in ComfyUI 0.39 / frontend 1.53.10: 60 of 60
+links, loads clean in both renderers, the server reports only the absent model files. The model was not run.
+
 ### Why padding matters
 
 ComfyUI core floors the empty-latent size and centre-crops on VAE encode. So a 1920 × 1080 clip is sampled at 1920 × 1056, and its top and bottom 12 rows are lost.
