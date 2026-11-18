@@ -211,3 +211,9 @@ The JSON files next to each table are the record. Run `python tools/registry.py 
 ## Licence
 
 Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+## Switches in Settings (2026-11-18)
+
+The three kill switches are now also settings: *Settings > C2C > LTX-Enhanced* - load the pack, load the SDR -> HDR
+helpers (both apply at the next start) and LTXE Tiled Model tiling (applies to the next run). All default on, as
+before. `LTXE_DISABLE`, `LTXE_DISABLE_HDR` and `LTXE_DISABLE_TILING` still win when set.
