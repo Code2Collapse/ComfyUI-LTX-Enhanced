@@ -77,7 +77,16 @@ class TileSettings:
 
 
 def disabled() -> bool:
-    return os.environ.get("LTXE_DISABLE_TILING", "").strip() not in ("", "0")
+    """LTXE_DISABLE_TILING (set, not "0") wins; else the C2C setting c2c.ltxe.tiling.enabled (L3.02) when the pack
+    is loaded as a package (the planning core itself stays free of ComfyUI: the reader is outside ltx_enhanced/)."""
+    raw = os.environ.get("LTXE_DISABLE_TILING", "")
+    if raw != "":
+        return raw.strip() not in ("", "0")
+    try:
+        from .._c2c_saved_setting import get as _c2c_setting
+    except ImportError:          # ltx_enhanced imported on its own (tests, benchmarks): no saved settings
+        return False
+    return not bool(_c2c_setting("c2c.ltxe.tiling.enabled", True))
 
 
 def pack(tensors: list[torch.Tensor]) -> tuple[torch.Tensor, list[torch.Size]]:
